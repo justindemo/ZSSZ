@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#cde6c7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/set_getAccess"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/shape_setting_btn"
+            android:text="获取执法资格"
+            android:textSize="18sp" />
+
+
+
+        <Button
+            android:id="@+id/set_updateData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/shape_setting_btn"
+            android:text="更新本地数据"
+            android:textSize="18sp" />
+        <Button
+            android:id="@+id/set_getVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/shape_setting_btn"
+            android:text="检查更新"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+</RelativeLayout>

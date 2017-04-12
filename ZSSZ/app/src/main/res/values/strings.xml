@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">掌上市政</string>
+    <string name="logo_userName">用户名 :</string>
+    <string name="login">登录</string>
+    <string name="register">注册</string>
+    <string name="logo_passWordName">密码 :</string>
+    <string name="logo_save">记住用户名密码</string>
+    <string-array name="spingarr">
+        <item>规格1</item>
+        <item>规格2</item>
+        <item>规格3</item>
+    </string-array>
+</resources>
