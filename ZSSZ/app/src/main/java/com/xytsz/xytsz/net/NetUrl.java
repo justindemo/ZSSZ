@@ -9,6 +9,7 @@ public class NetUrl {
 
 
     public static final String SERVERURL = "http://dx.xytgps.com:10010/SZWEBSERVICE/newxytszServices.asmx";
+
     /**
      *命名空间
      */

@@ -31,12 +31,12 @@ public class MoreAdapter extends BaseAdapter{
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-       ViewHolder holder = null;
+       ViewHolder holder ;
         if (convertView == null){
             holder = new ViewHolder();
             convertView = View.inflate(parent.getContext(), R.layout.item_more, null);

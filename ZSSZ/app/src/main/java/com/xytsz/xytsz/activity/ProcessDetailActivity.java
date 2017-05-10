@@ -212,7 +212,7 @@ public class ProcessDetailActivity extends AppCompatActivity {
             }
         }.start();
 
-
+        //默认显示
         if (allImageUrls.size() == 0) {
             predealPhoto.setImageResource(R.mipmap.prepost);
             dealingPhoto.setImageResource(R.mipmap.prepost);

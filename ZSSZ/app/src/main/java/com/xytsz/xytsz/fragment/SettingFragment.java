@@ -1,6 +1,7 @@
 package com.xytsz.xytsz.fragment;
 
 
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -8,8 +9,12 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.xytsz.xytsz.R;
+import com.xytsz.xytsz.activity.MainActivity;
 import com.xytsz.xytsz.bean.UpdateStatus;
 import com.xytsz.xytsz.bean.VersionInfo;
+import com.xytsz.xytsz.global.GlobalContanstant;
+import com.xytsz.xytsz.util.IntentUtil;
+import com.xytsz.xytsz.util.SpUtils;
 import com.xytsz.xytsz.util.ToastUtil;
 import com.xytsz.xytsz.base.BaseFragment;
 import com.xytsz.xytsz.util.UpdateVersionUtil;
@@ -24,6 +29,7 @@ public class SettingFragment extends BaseFragment implements View.OnClickListene
     private Button mBtAccess;
     private Button mBtData;
     private Button mBtVersion;
+    private Button mBtExit;
 
     @Override
     public View initView() {
@@ -31,6 +37,7 @@ public class SettingFragment extends BaseFragment implements View.OnClickListene
         mBtAccess = (Button) view.findViewById(R.id.set_getAccess);
         mBtData = (Button) view.findViewById(R.id.set_updateData);
         mBtVersion = (Button) view.findViewById(R.id.set_getVersion);
+        mBtExit = (Button) view.findViewById(R.id.set_exit);
         return view;
     }
 
@@ -39,6 +46,7 @@ public class SettingFragment extends BaseFragment implements View.OnClickListene
         mBtAccess.setOnClickListener(this);
         mBtData.setOnClickListener(this);
         mBtVersion.setOnClickListener(this);
+        mBtExit.setOnClickListener(this);
 
     }
 
@@ -46,6 +54,12 @@ public class SettingFragment extends BaseFragment implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.set_exit:
+                SpUtils.exit(v.getContext());
+                Intent intent = new Intent(this.getActivity(),MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                break;
             case R.id.set_getAccess:
                 ToastUtil.shortToast(getActivity(), "已获取执法资格");
                 break;

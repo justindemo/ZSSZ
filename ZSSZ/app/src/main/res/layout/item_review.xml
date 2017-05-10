@@ -11,7 +11,7 @@
         android:text="道路"
         android:textSize="20sp"
         android:id="@+id/tv_road_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView
         android:id="@+id/tv_un_read_msg_count"

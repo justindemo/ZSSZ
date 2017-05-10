@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapViewLayoutParams;
 import com.baidu.mapapi.map.Marker;
@@ -51,11 +52,11 @@ public class MemberLocationActivity extends AppCompatActivity implements BaiduMa
             switch (msg.what) {
                 case PERSONLIST:
                     personList = (List<PersonLocation.PersonListBean>) msg.obj;
-                    //initPop();
+
                     if (personList.size() == 0) {
                         ToastUtil.shortToast(getApplicationContext(), "没有巡查人员");
                     } else {
-
+                        initPop();
                         draw();
                     }
 
@@ -76,6 +77,21 @@ public class MemberLocationActivity extends AppCompatActivity implements BaiduMa
 
     private void initView() {
         mMp = (TextureMapView) findViewById(R.id.mapview);
+        baiduMap = mMp.getMap();
+
+        baiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                pop.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public boolean onMapPoiClick(MapPoi mapPoi) {
+                return false;
+            }
+        });
+
+
 
     }
 
@@ -125,9 +141,9 @@ public class MemberLocationActivity extends AppCompatActivity implements BaiduMa
     private void draw() {
         mMp.showScaleControl(false);
         //请求服务器  获取每个人的地址  long 经度
-        baiduMap = mMp.getMap();
+
         BitmapDescriptor bitmap = BitmapDescriptorFactory
-                .fromResource(R.mipmap.inspect);
+                .fromResource(R.mipmap.icon_twinkle);
 
         for (int i = 0; i < personList.size(); i++) {
             option = new MarkerOptions();
@@ -136,29 +152,35 @@ public class MemberLocationActivity extends AppCompatActivity implements BaiduMa
             LatLng latLng = new LatLng(latitude, longitude);
             //经纬度
             option.position(latLng).icon(bitmap);
-            baiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(17));
+            baiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
             baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(latLng));
             baiduMap.addOverlay(option);
         }
 
 
         // 把事件传递给Marker覆盖物
-        // baiduMap.setOnMarkerClickListener(this);
+         baiduMap.setOnMarkerClickListener(this);
 
     }
 
-   /* private void initPop() {
+    private void initPop() {
         pop = View.inflate(this, R.layout.pop, null);
         title = (TextView) pop.findViewById(R.id.title);
         pop.setVisibility(View.INVISIBLE);
+
+        double latitude = personList.get(0).getLatitude();
+        double longitude = personList.get(0).getLongitude();
+        LatLng latLng = new LatLng(latitude,longitude);
+
+
         MapViewLayoutParams param = new MapViewLayoutParams.Builder()
                 .layoutMode(MapViewLayoutParams.ELayoutMode.mapMode)// 使用经纬度模式
-                .position(new LatLng(latitude, longitude))// 设置控件跟着地图移动
+                .position(latLng)// 设置控件跟着地图移动
                 .width(MapViewLayoutParams.WRAP_CONTENT)
                 .height(MapViewLayoutParams.WRAP_CONTENT)
                 .build();
         mMp.addView(pop, param);
-    }*/
+    }
 
     @Override
     protected void onResume() {
@@ -187,7 +209,7 @@ public class MemberLocationActivity extends AppCompatActivity implements BaiduMa
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        // pop.setVisibility(View.VISIBLE);
+        pop.setVisibility(View.VISIBLE);
         MapViewLayoutParams param = new MapViewLayoutParams.Builder()
                 .layoutMode(MapViewLayoutParams.ELayoutMode.mapMode)// 使用经纬度模式
                 .position(marker.getPosition())// 设置控件跟着地图移动

@@ -36,6 +36,14 @@
             android:background="@drawable/shape_setting_btn"
             android:text="检查更新"
             android:textSize="18sp" />
+        <Button
+            android:id="@+id/set_exit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/shape_setting_btn"
+            android:text="退出登录"
+            android:textSize="18sp" />
     </LinearLayout>
 
 </RelativeLayout>

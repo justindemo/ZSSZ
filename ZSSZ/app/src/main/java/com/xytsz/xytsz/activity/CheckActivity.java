@@ -2,6 +2,8 @@ package com.xytsz.xytsz.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -28,7 +30,20 @@ import java.util.List;
  */
 public class CheckActivity extends AppCompatActivity {
 
+    private static final int ISCHECK = 6003;
     private ListView mLv;
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case ISCHECK:
+                    ToastUtil.shortToast(getApplicationContext(), "没有已审核的数据，请稍后重试");
+                    break;
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,12 +85,15 @@ public class CheckActivity extends AppCompatActivity {
                             public void run() {
                                 if (adapter != null) {
                                     mLv.setAdapter(adapter);
-                                } else {
-                                    ToastUtil.shortToast(getApplicationContext(), "没有需要验收的数据，请稍后重试");
-
                                 }
                             }
                         });
+
+
+                    }else {
+                        Message message = Message.obtain();
+                        message.what = ISCHECK;
+                        handler.sendMessage(message);
 
 
                     }

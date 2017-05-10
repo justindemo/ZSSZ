@@ -48,4 +48,5 @@ public class GlobalContanstant {
     public static final String CHECKSUM = "CHECKSUM";
     public static final String PERSONNAMELIST = "PERSONNAMELIST";
     public static final String PERSONIDLIST = "PERSONIDLIST";
+    public static final String ROLE = "ROLE";
 }

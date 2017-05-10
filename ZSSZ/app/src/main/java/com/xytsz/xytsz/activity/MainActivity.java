@@ -89,13 +89,16 @@ public class MainActivity extends AppCompatActivity {
                 loginID = login_id.getText().toString();
                 pWD = passWord.getText().toString();
 
-                SpUtils.saveString(getApplicationContext(), GlobalContanstant.LOGINID, loginID);
-                SpUtils.saveString(getApplicationContext(), GlobalContanstant.PASSWORD, pWD);
 
                 if (TextUtils.isEmpty(loginID) || TextUtils.isEmpty(pWD)) {
                     ToastUtil.shortToast(getApplicationContext(), "用户名或密码不能为空");
-                    return;
+
+                }else{
+                    SpUtils.saveString(getApplicationContext(), GlobalContanstant.LOGINID, loginID);
+                    SpUtils.saveString(getApplicationContext(), GlobalContanstant.PASSWORD, pWD);
+
                 }
+
 
                 //上传服务器
                 new Thread() {
@@ -121,12 +124,15 @@ public class MainActivity extends AppCompatActivity {
                                             String phone = personInfo.get_telephone();
                                             int department_id = personInfo.get_department_id();
 
+                                            int role = personInfo.get_role_id();
                                             //sp 保存
 
                                             SpUtils.saveInt(getApplicationContext(), GlobalContanstant.PERSONID, personID);
                                             SpUtils.saveString(getApplicationContext(), GlobalContanstant.USERNAME, userName);
                                             SpUtils.saveString(getApplicationContext(), GlobalContanstant.PHONE, phone);
                                             SpUtils.saveInt(getApplicationContext(), GlobalContanstant.DEPARATMENT, department_id);
+                                            SpUtils.saveInt(getApplicationContext(),GlobalContanstant.ROLE,role);
+
 
                                             ToastUtil.shortToast(getApplicationContext(), "登录成功");
 

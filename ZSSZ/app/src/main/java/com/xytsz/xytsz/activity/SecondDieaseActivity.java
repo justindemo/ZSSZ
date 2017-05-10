@@ -34,7 +34,7 @@ public class SecondDieaseActivity extends AppCompatActivity {
 
         }
             firstDiease.imageId.add(Data.SecondImageID);
-            firstDiease.dieaseName = "二级病害";
+            firstDiease.dieaseName = "二类病害";
         FirstAdapter adapter = new FirstAdapter(firstDiease);
         if (adapter != null) {
 

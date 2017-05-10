@@ -45,6 +45,7 @@ public class CheckDetailActivity extends AppCompatActivity implements View.OnCli
     private TextView mtvGrade;
     private TextView mtvFatype;
     private TextView mtvPbtype;
+    private TextView mtvDealtype;
     private TextView mtvReportePlace;
     private TextView mtvReviewer;
     private TextView mtvDealer;
@@ -116,6 +117,7 @@ public class CheckDetailActivity extends AppCompatActivity implements View.OnCli
         mtvReporter = (TextView) findViewById(R.id.tv_check_reporter);
         mtvDiseaseName = (TextView) findViewById(R.id.tv_check_diseasename);
         mtvGrade = (TextView) findViewById(R.id.tv_check_grade);
+        mtvDealtype = (TextView) findViewById(R.id.tv_check_dealtype);
         mtvFatype = (TextView) findViewById(R.id.tv_check_fatype);
         mtvPbtype = (TextView) findViewById(R.id.tv_check_pbtype);
         mtvReportePlace = (TextView) findViewById(R.id.tv_check_reporteplace);
@@ -173,19 +175,19 @@ public class CheckDetailActivity extends AppCompatActivity implements View.OnCli
         int level = detail.getLevel();
         mtvDiseaseName.setText(Data.pbname[level]);
         mtvGrade.setText(Data.grades[disposalLevel_id]);
-        int facilityType_id = detail.getFacilityType_ID()-1;
-        mtvFatype.setText(Data.facilitytypes[facilityType_id]);
+        mtvDealtype.setText(detail.getDealType_Name());
+        mtvFatype.setText(detail.getFacilityType_Name());
 
-        int diseaseType_id = detail.getDiseaseType_ID() - 1;
-        mtvPbtype.setText(Data.problemtypes[facilityType_id][diseaseType_id]);
 
-        int streetID = detail.getStreetAddress_ID() -4;
-        mtvReportePlace.setText(Data.roads[streetID]);
+        mtvPbtype.setText(detail.getDiseaseType_Name());
+
+        mtvReportePlace.setText(detail.getStreetAddress_Name());
 
 
         String uploadTime = detail.getUploadTime();
         mtvReporteTime.setText(uploadTime);
-        mtvReviewtime.setText(uploadTime);
+        String reviewedTime = detail.getReviewedTime();
+        mtvReviewtime.setText(reviewedTime);
 
         String actualCompletionInfo = detail.getActualCompletionInfo();
         mtvDesc.setText(actualCompletionInfo);

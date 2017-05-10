@@ -88,8 +88,6 @@ public class RoadActivity extends AppCompatActivity {
                     String serviceData = ReviewActivity.getServiceData(GlobalContanstant.GETREVIEW);
 
 
-
-
                     if (serviceData != null) {
 
                         Review review = JsonUtil.jsonToBean(serviceData, Review.class);

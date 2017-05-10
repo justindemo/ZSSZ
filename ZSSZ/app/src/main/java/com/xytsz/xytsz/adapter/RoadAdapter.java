@@ -112,8 +112,6 @@ public class RoadAdapter extends BaseAdapter {
         String userName = personNamelist.get(id);
 
 
-        //String userName = SpUtils.getString(parent.getContext(), GlobalContanstant.USERNAME);
-
 
         String uploadTime = reviewRoadDetail.getUploadTime();
 

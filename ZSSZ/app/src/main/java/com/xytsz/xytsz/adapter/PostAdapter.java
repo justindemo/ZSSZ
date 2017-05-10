@@ -56,8 +56,8 @@ public class PostAdapter extends BaseAdapter{
         //
         Review.ReviewRoad dealRoadName = reviewRoads.get(position);
         int size = dealRoadName.getList().size();
-        int streetId = dealRoadName.getStreetId() - 4;
-        holder.roadname.setText(Data.roads[streetId]);
+
+        holder.roadname.setText(dealRoadName.getStreetName());
         if (size == 0) {
             holder.unreadmsg.setVisibility(View.INVISIBLE);
         } else {

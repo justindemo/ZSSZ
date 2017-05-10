@@ -61,6 +61,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
     private static final int IS_PHOTO_SUCCESS1 = 10000003;
     private static final int IS_PHOTO_SUCCESS3 = 10000005;
     private static final int IS_PHOTO_SUCCESS2 = 10000004;
+
+    private boolean isPostFirst;
     @Bind(R.id.iv_predeal_icon1)
     ImageView ivPredealIcon1;
     @Bind(R.id.iv_predeal_icon2)
@@ -90,6 +92,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
     private Review.ReviewRoad.ReviewRoadDetail reviewRoadDetail;
     private static final int ISPOST = 10000001;
+    private boolean isPostSecond;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -107,6 +110,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                     if (isphotoSuccess.equals("true")) {
                         ToastUtil.shortToast(getApplicationContext(), "处置前照片上报成功");
                         btUncheckPredeal.setEnabled(false);
+                        isPostFirst = true;
                     }
                     break;
                 case IS_PHOTO_SUCCESS2:
@@ -114,6 +118,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                     if (isphotoSuccess1.equals("true")) {
                         ToastUtil.shortToast(getApplicationContext(), "处置中照片上报成功");
                         btUncheckDealing.setEnabled(false);
+                        isPostFirst = true;
+                        isPostSecond = true;
                     }
                     break;
                 case IS_PHOTO_SUCCESS3:
@@ -156,7 +162,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         taskNumber = reviewRoadDetail.getTaskNumber();
 
 
-
         new Thread() {
             @Override
             public void run() {
@@ -171,10 +176,13 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                         final List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(preDealJson, new TypeToken<List<ImageUrl>>() {
                         }.getType());
 
+
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                switch (imageUrlList.size() ){
+
+                                switch (imageUrlList.size()) {
                                     //如果没有处置前的图片 都不能点击
 
                                     case 0:
@@ -182,8 +190,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         btUncheckPredeal.setEnabled(false);
                                         btUncheckDealed.setEnabled(false);
                                         break;
-                                        //有图片的的时候  处置中和处置后的不能点
+                                    //有图片的的时候  处置中和处置后的不能点
                                     case 1:
+                                        isPostFirst = true;
                                         btUncheckDealed.setEnabled(false);
                                         btUncheckPredeal.setVisibility(View.INVISIBLE);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(0).getImgurl()).into(ivPredealIcon1);
@@ -230,7 +239,10 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                switch (imageIngUrlList.size() ){
+
+
+
+                                switch (imageIngUrlList.size()) {
                                     case 0:
                                         btUncheckDealing.setEnabled(false);
                                         btUncheckDealed.setEnabled(false);
@@ -244,6 +256,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         ivDealingIcon2.setEnabled(false);
                                         ivDealingIcon3.setVisibility(View.INVISIBLE);
                                         ivDealingIcon3.setEnabled(false);
+                                        isPostFirst = true;
+                                        isPostSecond = true;
                                         break;
                                     case 2:
                                         btUncheckDealing.setVisibility(View.INVISIBLE);
@@ -254,6 +268,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         ivDealingIcon2.setEnabled(false);
                                         ivDealingIcon3.setVisibility(View.INVISIBLE);
                                         ivDealingIcon3.setEnabled(false);
+
                                         break;
                                     case 3:
                                         btUncheckDealing.setVisibility(View.INVISIBLE);
@@ -286,9 +301,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
      * 获取到处置中和处置前的照片
      *
      * @param taskNumber ：单号
-     *
      * @return json
-     *
      */
     private String getPreImgUrl(String taskNumber) throws Exception {
         SoapObject soapobject = new SoapObject(NetUrl.nameSpace, NetUrl.getPreImageURLmethodName);
@@ -309,9 +322,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
     /**
      * 获取处置中的照片
+     *
      * @param taskNumber:danhao
      * @return ：json
-     *
      * @throws Exception
      */
     private String getRngImgUrl(String taskNumber) throws Exception {
@@ -331,7 +344,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         return result;
     }
 
-    private String connectWebService(DiseaseInformation diseaseInformation,int phaseIndication) throws Exception {
+    private String connectWebService(DiseaseInformation diseaseInformation, int phaseIndication) throws Exception {
         //构建初始化soapObject
         SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.photomethodName);
         //传递的参数
@@ -441,7 +454,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
             FileInputStream fis = new FileInputStream(path);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[8192];
-            int count ;
+            int count;
             while ((count = fis.read(buffer)) >= 0) {
                 baos.write(buffer, 0, count);
             }
@@ -502,7 +515,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                             diseaseInformation.taskNumber = taskNumber;
                             Log.i("taskNumber", diseaseInformation.taskNumber);
                             try {
-                                isphotoSuccess = connectWebService(diseaseInformation,GlobalContanstant.GETSEND);
+                                isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETSEND);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 return;
@@ -547,36 +560,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
             //点击上报正在处置图片
             case R.id.bt_uncheck_dealing:
                 //点击上报ing的图片的时候先判断是否有上报处置前的照片
-                new Thread(){
-                    @Override
-                    public void run() {
-
-                        try {
-                            String prejson = getPreImgUrl(taskNumber);
-
-                            List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(prejson, new TypeToken<List<ImageUrl>>() {
-                            }.getType());
-
-                            if (imageUrlList.size() == 0 ){
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"请先上报处置前的照片",Toast.LENGTH_LONG).show();
-                                    }
-                                });
-
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            ToastUtil.shortToast(getApplicationContext(),"网络异常");
-                        }
-                    }
-                }.start();
-
-
-
-
+                //是否有处置前的照片
+                if (isPostFirst) {
                     new Thread() {
                         @Override
                         public void run() {
@@ -602,7 +587,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }.start();
 
-
+                } else {
+                    ToastUtil.shortToast(getApplicationContext(), "请先上报处置前的照片");
+                }
                 break;
             case R.id.iv_dealed_icon1:
                 Intent intent7 = new Intent("android.media.action.IMAGE_CAPTURE");
@@ -633,89 +620,100 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.bt_uncheck_dealed:
 
-                new Thread(){
-                    @Override
-                    public void run() {
-
-                        try {
-                            String prejson = getPreImgUrl(taskNumber);
-                            String dealingJson = getRngImgUrl(taskNumber);
-                            List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(prejson, new TypeToken<List<ImageUrl>>() {
-                            }.getType());
-                            List<ImageUrl> imageIngUrlList = JsonUtil.jsonToBean(dealingJson, new TypeToken<List<ImageUrl>>() {
-                            }.getType());
-
-                            if (imageUrlList.size() == 0 || imageIngUrlList.size() == 0){
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"请先上报处置前或处置中的照片",Toast.LENGTH_LONG).show();
-                                    }
-                                });
-
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            ToastUtil.shortToast(getApplicationContext(),"网络异常");
-                        }
-                    }
-                }.start();
-
-                    personID = SpUtils.getInt(getApplicationContext(), GlobalContanstant.PERSONID);
-                    //维修说明
-                    String repair = etRepairStatu.getText().toString();
-                    reviewRoadDetail.setActualCompletionInfo(repair);
-
-                    reviewRoadDetail.setActualCompletion_Person_ID(personID);
-                    reviewRoadDetail.setActualCompletionTime(getCurrentTime());
-                    diseaseInformation.taskNumber = reviewRoadDetail.getTaskNumber();
-
-                    new Thread() {
-                        @Override
-                        public void run() {
-
-                            //to上传信息以及 维修说明
-                            try {
-
-                                String isPost = toManagement(GlobalContanstant.GETCHECK, reviewRoadDetail);
-
-                                //发信息  实现UI更新
-                                Message message = Message.obtain();
-                                message.what = ISPOST;
-                                message.obj = isPost;
-                                handler.sendMessage(message);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }.start();
-
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            for (int i = 0; i < fileNamesss.size(); i++) {
-                                diseaseInformation.photoName = fileNamesss.get(i);
-                                diseaseInformation.encode = imageBase64Stringsss.get(i);
-                                diseaseInformation.taskNumber = taskNumber;
-                                Log.i("taskNumber", diseaseInformation.taskNumber);
+                if (isPostFirst) {
+                    if (isPostSecond) {
+                        /*new Thread() {
+                            @Override
+                            public void run() {
 
                                 try {
-                                    isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETCHECK);
+                                    String prejson = getPreImgUrl(taskNumber);
+                                    String dealingJson = getRngImgUrl(taskNumber);
+                                    List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(prejson, new TypeToken<List<ImageUrl>>() {
+                                    }.getType());
+                                    List<ImageUrl> imageIngUrlList = JsonUtil.jsonToBean(dealingJson, new TypeToken<List<ImageUrl>>() {
+                                    }.getType());
+
+                                    if (imageUrlList.size() == 0 || imageIngUrlList.size() == 0) {
+
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getApplicationContext(), "请先上报处置前或处置中的照片", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+
+                                    }
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    return;
+                                    ToastUtil.shortToast(getApplicationContext(), "网络异常");
+                                }
+                            }
+                        }.start();*/
+
+                        personID = SpUtils.getInt(getApplicationContext(), GlobalContanstant.PERSONID);
+                        //维修说明
+                        String repair = etRepairStatu.getText().toString();
+                        reviewRoadDetail.setActualCompletionInfo(repair);
+
+                        reviewRoadDetail.setActualCompletion_Person_ID(personID);
+                        reviewRoadDetail.setActualCompletionTime(getCurrentTime());
+                        diseaseInformation.taskNumber = reviewRoadDetail.getTaskNumber();
+
+                        new Thread() {
+                            @Override
+                            public void run() {
+
+                                //to上传信息以及 维修说明
+                                try {
+
+                                    String isPost = toManagement(GlobalContanstant.GETCHECK, reviewRoadDetail);
+
+                                    //发信息  实现UI更新
+                                    Message message = Message.obtain();
+                                    message.what = ISPOST;
+                                    message.obj = isPost;
+                                    handler.sendMessage(message);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }.start();
+
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                for (int i = 0; i < fileNamesss.size(); i++) {
+                                    diseaseInformation.photoName = fileNamesss.get(i);
+                                    diseaseInformation.encode = imageBase64Stringsss.get(i);
+                                    diseaseInformation.taskNumber = taskNumber;
+                                    Log.i("taskNumber", diseaseInformation.taskNumber);
+
+                                    try {
+                                        isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETCHECK);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        return;
+                                    }
+
+                                    Message message = Message.obtain();
+                                    message.what = IS_PHOTO_SUCCESS3;
+                                    message.obj = isphotoSuccess;
+                                    handler.sendMessage(message);
                                 }
 
-                                Message message = Message.obtain();
-                                message.what = IS_PHOTO_SUCCESS3;
-                                message.obj = isphotoSuccess;
-                                handler.sendMessage(message);
                             }
+                        }.start();
+                    } else {
+                        ToastUtil.shortToast(getApplicationContext(), "请先上报处置中的照片");
 
-                        }
-                    }.start();
+                    }
+                } else {
+                    ToastUtil.shortToast(getApplicationContext(), "请先上报处置前的照片");
+
+                }
+
 
                 break;
         }
@@ -723,10 +721,10 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
     private String getPhotopath(int i) {
         // 照片全路径
-        String fileName ;
+        String fileName;
         // 文件夹路径
         String pathUrl = "/sdcard/Image/mymy/";
-        String imageName = "imageTest"+i+".jpg";
+        String imageName = "imageTest" + i + ".jpg";
         File file = new File(pathUrl);
         file.mkdirs();// 创建文件夹
         fileName = pathUrl + imageName;
@@ -746,7 +744,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
      */
     private List<String> imageBase64Stringss = new ArrayList<>();
     private List<String> imageBase64Stringsss = new ArrayList<>();
-
 
 
     private Bitmap getBitmap(ImageView imageView) {
@@ -783,9 +780,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         if (data == null) {
             /*ToastUtil.shortToast(getApplicationContext(), "请重新选择");
         } else {*/
-            Bitmap bitmap ;
-            String fileName ;
-            String encode ;
+            Bitmap bitmap;
+            String fileName;
+            String encode;
             if (requestCode == 9001) {
                 // 有的手机data 为空
                 //bitmap = (Bitmap) data.getExtras().get("data");
@@ -800,7 +797,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                 imageBase64Strings.add(encode);
                 btUncheckPredeal.setEnabled(true);
             } else if (requestCode == 9002) {
-               // bitmap = (Bitmap) data.getExtras().get("data");
+                // bitmap = (Bitmap) data.getExtras().get("data");
 
                 bitmap = getBitmap(ivPredealIcon2);
                 fileName = saveToSDCard(bitmap);
@@ -898,7 +895,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
     }
-
 
 
     private void goHome() {

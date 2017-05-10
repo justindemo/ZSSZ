@@ -72,6 +72,7 @@ public class DiseaseInformation implements KvmSerializable {
     public String photoName;
     public String encode;
     public int dealtype_ID;
+    public String locationDesc;
 
     @Override
     public Object getProperty(int i) {

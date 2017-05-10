@@ -6,4 +6,6 @@ package com.xytsz.xytsz.bean;
  */
 public class Sender {
 
+
+
 }

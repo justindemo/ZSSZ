@@ -121,9 +121,6 @@ public class ReviewActivity extends AppCompatActivity{
 
                 if (reviewAdapter != null) {
                     mLv.setAdapter(reviewAdapter);
-                } else {
-                    ToastUtil.shortToast(getApplicationContext(), "未上报数据");
-                    return;
                 }
 
                 mLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -134,6 +131,9 @@ public class ReviewActivity extends AppCompatActivity{
                         startActivity(intent);
                     }
                 });
+            }else {
+                ToastUtil.shortToast(getApplicationContext(), "未上报数据");
+
             }
         }
     }

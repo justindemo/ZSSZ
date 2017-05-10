@@ -45,6 +45,7 @@ public class SendRoadAdapter extends BaseAdapter {
 
 
     private static final int ISSEND = 1000002;
+    private static final int ISSENDPERSON = 1000003;
 
     private String str;
     private Review.ReviewRoad reviewRoad;
@@ -117,7 +118,10 @@ public class SendRoadAdapter extends BaseAdapter {
         }
 
         String userName = personNamelist.get(id);
-
+        Message message = Message.obtain();
+        message.what = ISSENDPERSON;
+        message.obj = userName;
+        handler.sendMessage(message);
 
 
 
@@ -152,7 +156,7 @@ public class SendRoadAdapter extends BaseAdapter {
                 //改变bean类的参数
                 if (reviewRoadDetail.getRequestTime()== null) {
                     ToastUtil.shortToast(v.getContext(), "请先选择要求时间");
-                    return;
+
                 } else {
                     AlertDialog dialog = new AlertDialog.Builder(v.getContext())
                             .setTitle("请选择").setSingleChoiceItems(servicePerson, 0, new DialogInterface.OnClickListener() {

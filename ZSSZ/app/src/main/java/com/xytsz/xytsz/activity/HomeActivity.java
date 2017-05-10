@@ -20,6 +20,14 @@ import android.view.MenuItem;
 import android.widget.RadioGroup;
 
 import com.baidu.mapapi.SDKInitializer;
+import com.google.gson.reflect.TypeToken;
+import com.xytsz.xytsz.bean.Deal;
+import com.xytsz.xytsz.bean.DealType;
+import com.xytsz.xytsz.bean.DiseaseType;
+import com.xytsz.xytsz.bean.FacilityName;
+import com.xytsz.xytsz.bean.FacilitySpecifications;
+import com.xytsz.xytsz.bean.FacilityType;
+import com.xytsz.xytsz.bean.Road;
 import com.xytsz.xytsz.global.GlobalContanstant;
 import com.xytsz.xytsz.base.BaseFragment;
 import com.xytsz.xytsz.fragment.HelpFragment;
@@ -28,13 +36,21 @@ import com.xytsz.xytsz.adapter.MainAdapter;
 import com.xytsz.xytsz.fragment.MeFragment;
 import com.xytsz.xytsz.fragment.MoreFragment;
 
+import com.xytsz.xytsz.net.NetUrl;
 import com.xytsz.xytsz.ui.NoScrollViewpager;
 import com.xytsz.xytsz.R;
 import com.xytsz.xytsz.fragment.SettingFragment;
 import com.xytsz.xytsz.util.IntentUtil;
+import com.xytsz.xytsz.util.JsonUtil;
 import com.xytsz.xytsz.util.SpUtils;
 
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by admin on 2017/1/3.
@@ -57,8 +73,9 @@ public class HomeActivity extends AppCompatActivity {
         String loginId = SpUtils.getString(getApplicationContext(), GlobalContanstant.LOGINID);
 
         SDKInitializer.initialize(getApplicationContext());
-        if (TextUtils.isEmpty(loginId)){
+        if (loginId == null || TextUtils.isEmpty(loginId)){
             Intent intent = new Intent(HomeActivity.this,MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
 
@@ -220,4 +237,28 @@ public class HomeActivity extends AppCompatActivity {
         }
 
     };
+    private String getJson(String method, String soap_action) throws Exception {
+        SoapObject soapObject = new SoapObject(NetUrl.nameSpace, method);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
+        envelope.bodyOut = soapObject;
+        envelope.dotNet = true;
+        envelope.setOutputSoapObject(soapObject);
+
+        HttpTransportSE httpTransportSE = new HttpTransportSE(NetUrl.SERVERURL);
+        httpTransportSE.call(soap_action, envelope);
+
+        SoapObject object = (SoapObject) envelope.bodyIn;
+
+        return object.getProperty(0).toString();
+    }
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+
+    }
 }

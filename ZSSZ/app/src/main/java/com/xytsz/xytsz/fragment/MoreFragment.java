@@ -13,13 +13,16 @@ import com.xytsz.xytsz.activity.FloodActivity;
 import com.xytsz.xytsz.activity.LibActivity;
 import com.xytsz.xytsz.activity.MakerProblemActivty;
 import com.xytsz.xytsz.activity.MemberLocationActivity;
-import com.xytsz.xytsz.activity.ProblemActivity;
 import com.xytsz.xytsz.adapter.MoreAdapter;
 import com.xytsz.xytsz.base.BaseFragment;
+import com.xytsz.xytsz.global.GlobalContanstant;
 import com.xytsz.xytsz.util.IntentUtil;
+import com.xytsz.xytsz.util.SpUtils;
+import com.xytsz.xytsz.util.ToastUtil;
 
 /**
  * Created by admin on 2017/1/4.
+ *
  */
 public class MoreFragment extends BaseFragment {
 
@@ -29,6 +32,7 @@ public class MoreFragment extends BaseFragment {
     private static final int LIB = 2;
     private static final int NOTICE = 4;
     private static final int FLOOD = 3;
+    private int role;
 
     @Override
     public View initView() {
@@ -50,10 +54,21 @@ public class MoreFragment extends BaseFragment {
                 switch (position) {
                     case PERSON:
                         //定位
-                        IntentUtil.startActivity(parent.getContext(), MemberLocationActivity.class);
+                        if (role == 1) {
+                            IntentUtil.startActivity(parent.getContext(), MemberLocationActivity.class);
+                        } else {
+                            ToastUtil.shortToast(getContext(), "您没有权限");
+                        }
+
                         break;
                     case PROBLEM:
-                        IntentUtil.startActivity(parent.getContext(), MakerProblemActivty.class);
+                        if (role == 1) {
+                            IntentUtil.startActivity(parent.getContext(), MakerProblemActivty.class);
+                        } else {
+                            ToastUtil.shortToast(getContext(), "您没有权限");
+                        }
+                            //IntentUtil.startActivity(parent.getContext(), MakerProblemActivty.class);
+
                         break;
                     case LIB:
                         IntentUtil.startActivity(parent.getContext(), LibActivity.class);
@@ -91,5 +106,9 @@ public class MoreFragment extends BaseFragment {
         });
     }
 
-
+    @Override
+    public void onStart() {
+        super.onStart();
+        role = SpUtils.getInt(getContext(), GlobalContanstant.ROLE);
+    }
 }

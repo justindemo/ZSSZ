@@ -117,7 +117,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="处理设施："
+                android:text="处置类型："
                 android:textSize="20sp" />
 
             <LinearLayout
@@ -130,6 +130,7 @@
                 <Spinner
                     android:id="@+id/sp_deal_facility"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -159,6 +160,7 @@
                 <Spinner
                     android:id="@+id/sp_facilitytype"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -188,6 +190,7 @@
                 <Spinner
                     android:id="@+id/sp_problemtype"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -217,6 +220,7 @@
                 <Spinner
                     android:id="@+id/sp_facilityname"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -246,6 +250,7 @@
                 <Spinner
                     android:id="@+id/sp_facilitysize"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -275,6 +280,7 @@
                 <Spinner
                     android:id="@+id/sp_roadname"
                     android:layout_width="230dp"
+                    android:clickable="true"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -320,6 +326,14 @@
                 android:background="@mipmap/iv_add" />
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/locationDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="地理位置描述："
+            android:maxLines="4"
+            android:textSize="20sp" />
 
         <EditText
             android:id="@+id/problemDesc"
@@ -327,7 +341,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:hint="病害描述："
-            android:maxLines="2"
+            android:maxLines="4"
             android:textSize="20sp" />
 
         <Button

@@ -14,6 +14,18 @@ public class SpUtils {
     private static final String CONFIG = "config";
     private static SharedPreferences sp;
 
+    /**
+     *
+     * @param context :上下文
+     *
+     *
+     *
+     */
+    public static void exit(Context context){
+        SharedPreferences.Editor editor = context.getSharedPreferences(CONFIG, Context.MODE_PRIVATE).edit();
+        editor.clear();
+        editor.commit();// 保存参数
+    }
     public static String getString(Context context,  String key) {
         // 获取参数
         SharedPreferences preferences = context.getSharedPreferences(CONFIG, Context.MODE_PRIVATE);

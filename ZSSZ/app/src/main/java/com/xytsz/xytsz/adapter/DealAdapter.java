@@ -59,10 +59,10 @@ public class DealAdapter extends BaseAdapter {
         Review.ReviewRoad reviewRoad = reviewRoads.get(position);
 
         int size = reviewRoad.getList().size();
-        int reviewRoadname_id = reviewRoad.getStreetId() -4 ;
 
 
-        holder.roadname.setText(Data.roads[reviewRoadname_id]);
+
+        holder.roadname.setText(reviewRoad.getStreetName());
 
 
         if (size == 0) {

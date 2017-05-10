@@ -2,6 +2,8 @@ package com.xytsz.xytsz.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -25,8 +27,21 @@ import java.util.List;
  */
 public class PostActivity extends AppCompatActivity {
 
+    private static final int ISPOST = 5003;
     private ListView mlv;
     private int personID;
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case ISPOST:
+                    ToastUtil.shortToast(getApplicationContext(), "没有已审核的数据，请稍后重试");
+                    break;
+            }
+        }
+    };
+
 
 
     @Override
@@ -69,12 +84,17 @@ public class PostActivity extends AppCompatActivity {
                             public void run() {
                                 if (adapter != null) {
                                     mlv.setAdapter(adapter);
-                                } else {
-                                    ToastUtil.shortToast(getApplicationContext(), "没有下派的数据，请稍后重试");
-
                                 }
                             }
                         });
+
+
+                    }else {
+
+                        Message message = Message.obtain();
+                        message.what = ISPOST;
+                        handler.sendMessage(message);
+
 
 
                     }

@@ -1,11 +1,17 @@
 package com.xytsz.xytsz.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
@@ -37,6 +43,7 @@ public class SendRoadActivity extends AppCompatActivity {
 
     private static final int ISSEND = 1000002;
     private static final int ISPERSONLIST = 111002;
+    private static final int ISSENDPERSON = 1000003;
     private ListView mlv;
     private Handler handler = new Handler(){
         @Override
@@ -51,6 +58,24 @@ public class SendRoadActivity extends AppCompatActivity {
                     }
                     break;
 
+                case ISSENDPERSON :
+                    String userName = (String) msg.obj;
+                    NotificationManager nm = (NotificationManager)getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+                    Uri ringUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    Notification noti = new NotificationCompat.Builder(getApplicationContext())
+                            .setTicker("任务已派发给："+userName )
+                            .setContentTitle(userName)
+                            .setContentText("已收到新的派发任务")
+                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setContentIntent(getContentIntent())
+                            //自动隐藏
+                            .setAutoCancel(true)
+                            .setSound(ringUri)
+                            .build();
+                    //id =0 =  用来定义取消的id
+                    nm.notify(0, noti);
+                    break;
+
                 case ISPERSONLIST:
                     personlist = (List<PersonList.PersonListBean>) msg.obj;
                     servicePerson = new String[personlist.size()];
@@ -62,6 +87,13 @@ public class SendRoadActivity extends AppCompatActivity {
             }
         }
     };
+
+    private PendingIntent getContentIntent() {
+        Intent intent = new Intent(this,HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        return PendingIntent.getActivity(getApplicationContext(),2,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+    }
 
 
     private List<List<ImageUrl>> imageUrlReportLists = new ArrayList<>();

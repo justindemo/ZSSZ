@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * Created by admin on 2017/3/1.
+ *
  */
 public class PersonInfo implements Serializable {
 
@@ -36,6 +37,7 @@ public class PersonInfo implements Serializable {
     private String _login_id;
     private int _lotcode;
     private String _password;
+    //角色
     private int _role_id;
     private String _sex;
     private int _taskison;

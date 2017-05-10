@@ -2,6 +2,8 @@ package com.xytsz.xytsz.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,8 +35,20 @@ import java.util.List;
  */
 public class DealActivity extends AppCompatActivity {
 
+    private static final int ISDEAL = 3003;
     private ListView mLv;
     private int personID;
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case ISDEAL:
+                    ToastUtil.shortToast(getApplicationContext(), "没有已审核的数据，请稍后重试");
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,9 +56,7 @@ public class DealActivity extends AppCompatActivity {
         setContentView(R.layout.activity_deal);
 
 
-
-
-        personID = SpUtils.getInt(getApplicationContext(),GlobalContanstant.PERSONID);
+        personID = SpUtils.getInt(getApplicationContext(), GlobalContanstant.PERSONID);
 
         initView();
 
@@ -64,19 +76,19 @@ public class DealActivity extends AppCompatActivity {
             public void run() {
                 try {
 
-                    String dealData = getDealData(GlobalContanstant.GETDEAL,personID);
+                    String dealData = getDealData(GlobalContanstant.GETDEAL, personID);
                     if (dealData != null) {
 
                         Review review = JsonUtil.jsonToBean(dealData, Review.class);
                         List<Review.ReviewRoad> list = review.getReviewRoadList();
 
                         int dealSum = 0;
-                        for (Review.ReviewRoad reviewRoad : list){
+                        for (Review.ReviewRoad reviewRoad : list) {
                             dealSum += reviewRoad.getList().size();
                         }
 
 
-                        SpUtils.saveInt(getApplicationContext(),GlobalContanstant.DEALSUM,dealSum);
+                        SpUtils.saveInt(getApplicationContext(), GlobalContanstant.DEALSUM, dealSum);
 
 
                         final DealAdapter adapter = new DealAdapter(list);
@@ -86,12 +98,14 @@ public class DealActivity extends AppCompatActivity {
                             public void run() {
                                 if (adapter != null) {
                                     mLv.setAdapter(adapter);
-                                } else {
-                                    ToastUtil.shortToast(getApplicationContext(), "没有已下派的数据，请稍后重试");
-                                    return;
                                 }
                             }
                         });
+
+                    } else {
+                        Message message = Message.obtain();
+                        message.what = ISDEAL;
+                        handler.sendMessage(message);
 
                     }
                 } catch (Exception e) {
@@ -111,7 +125,7 @@ public class DealActivity extends AppCompatActivity {
         });
     }
 
-    public static String getDealData(int phaseIndication,int personID) throws Exception {
+    public static String getDealData(int phaseIndication, int personID) throws Exception {
         SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.getManagementList);
         soapObject.addProperty("PhaseIndication", phaseIndication);
         soapObject.addProperty("personId", personID);
@@ -129,7 +143,6 @@ public class DealActivity extends AppCompatActivity {
         Log.i("json", json);
         return json;
     }
-
 
 
 }

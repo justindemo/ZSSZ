@@ -31,6 +31,7 @@ public class DiseaseDetailActivity extends AppCompatActivity implements View.OnC
     private TextView mtvDisasename;
     private TextView mtvGrade;
     private TextView mtvFatype;
+    private TextView mtvDealtype;
     private TextView mtvPbtype;
     private TextView mtvReporteplace;
     private TextView mtvFaname;
@@ -62,6 +63,7 @@ public class DiseaseDetailActivity extends AppCompatActivity implements View.OnC
         mtvReporter = (TextView) findViewById(R.id.tv_detail_reporter);
         mtvDisasename = (TextView) findViewById(R.id.tv_detail_diseasename);
         mtvGrade = (TextView) findViewById(R.id.tv_detail_grade);
+        mtvDealtype = (TextView) findViewById(R.id.tv_detail_dealtype);
         mtvFatype = (TextView) findViewById(R.id.tv_detail_fatype);
         mtvPbtype = (TextView) findViewById(R.id.tv_detail_pbtype);
         mtvReporteplace = (TextView) findViewById(R.id.tv_detail_reporteplace);
@@ -77,7 +79,6 @@ public class DiseaseDetailActivity extends AppCompatActivity implements View.OnC
     private  int id;
     private void initData() {
         //赋值
-        //String userName = SpUtils.getString(getApplicationContext(), GlobalContanstant.USERNAME);
 
         String upload_person_id = detail.getUpload_Person_ID()+"";
 
@@ -94,28 +95,26 @@ public class DiseaseDetailActivity extends AppCompatActivity implements View.OnC
         }
 
         String userName = personNamelist.get(id);
-
-
         mtvReporter.setText(userName);
         int disposalLevel_id = detail.getDisposalLevel_ID() - 1;
         int level = detail.getLevel();
         mtvDisasename.setText(Data.pbname[level]);
         mtvGrade.setText(Data.grades[disposalLevel_id]);
-        int facilityType_id = detail.getFacilityType_ID() - 1;
-        mtvFatype.setText(Data.facilitytypes[facilityType_id][0]);
 
-        int diseaseType_id = detail.getDiseaseType_ID() - 1;
-        mtvPbtype.setText(Data.problemtypes[facilityType_id][diseaseType_id][0]);
+        mtvFatype.setText(detail.getFacilityType_Name());
+        mtvDealtype.setText(detail.getDealType_Name());
 
-        int streetID = detail.getStreetAddress_ID() - 4;
-        mtvReporteplace.setText(Data.roads[streetID][0]);
-
-        int facilityName_id = detail.getFacilityName_ID() - 1;
-        mtvFaname.setText(Data.facilitynames[facilityType_id][facilityName_id][0]);
+        mtvPbtype.setText(detail.getDiseaseType_Name());
 
 
-        int facilitySpecifications_id = detail.getFacilitySpecifications_ID() - 1;
-        mtvFasize.setText(Data.facilitysizes[facilityType_id][facilityName_id][facilitySpecifications_id][0]);
+        mtvReporteplace.setText(detail.getStreetAddress_Name());
+
+
+        mtvFaname.setText(detail.getFacilityName_Name());
+
+
+
+        mtvFasize.setText(detail.getFacilitySpecifications_Name());
 
         String uploadTime = detail.getUploadTime();
         mtvReportetime.setText(uploadTime);

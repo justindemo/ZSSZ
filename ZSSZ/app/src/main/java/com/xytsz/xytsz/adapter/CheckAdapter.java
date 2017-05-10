@@ -56,10 +56,9 @@ public class CheckAdapter extends BaseAdapter {
 
         //设置未读的点击时间  3:代表从服务器获取当前街道的所有病害
         Review.ReviewRoad reviewRoad = reviewRoads.get(position);
-        //ID:从4写的
-        int streetId = reviewRoad.getStreetId() - 4;
+
         int size = reviewRoad.getList().size();
-        holder.roadname.setText(Data.roads[streetId]);
+        holder.roadname.setText(reviewRoad.getStreetName());
 
         if (size == 0){
             holder.unreadmsg.setVisibility(View.INVISIBLE);

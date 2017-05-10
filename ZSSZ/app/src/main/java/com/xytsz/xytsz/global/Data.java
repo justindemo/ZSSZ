@@ -281,19 +281,7 @@ public class Data {
     public static String[] ThridDesc = {"井篦子损坏", "灯罩破损", "井篦子凹陷", "道牙损坏", "灯杆损坏", "路灯损坏", "护栏缺失", "步道麻面"};
 
 
-    public static String getJson(String method ,String soap_action)throws  Exception{
-        SoapObject soapObject = new SoapObject(NetUrl.nameSpace,method);
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
-        envelope.dotNet= true;
-        envelope.bodyOut = soapObject;
 
-        HttpTransportSE httpTransportSE = new HttpTransportSE(NetUrl.SERVERURL);
-        httpTransportSE.call(soap_action,envelope);
-
-        SoapObject object = (SoapObject) envelope.bodyIn;
-
-        return object.getProperty(0).toString();
-    }
 
 
 

@@ -79,6 +79,8 @@ public class MakerProblemActivty extends AppCompatActivity implements BaiduMap.O
                     if (details != null) {
                         initPop();
                         draw();
+                    }else {
+                        ToastUtil.shortToast(getApplicationContext(),"没有上报的数据");
                     }
                     break;
             }
@@ -155,13 +157,6 @@ public class MakerProblemActivty extends AppCompatActivity implements BaiduMap.O
                             message.what = ISGETALLTASK;
                             message.obj = list;
                             handler.sendMessage(message);
-                        }else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ToastUtil.shortToast(getApplicationContext(),"没有上报的数据");
-                                }
-                            });
                         }
 
                     }

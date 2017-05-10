@@ -33,7 +33,7 @@ public class ThridDieaseActivity extends AppCompatActivity {
             firstDiease.desc.add(Data.ThridDesc[i]);
         }
         firstDiease.imageId.add(Data.ThridImageID);
-        firstDiease.dieaseName = "三级病害";
+        firstDiease.dieaseName = "三类病害";
         FirstAdapter adapter = new FirstAdapter(firstDiease);
         if (adapter != null) {
 

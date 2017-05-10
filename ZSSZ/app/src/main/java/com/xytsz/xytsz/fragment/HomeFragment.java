@@ -1,7 +1,6 @@
 package com.xytsz.xytsz.fragment;
 
 
-import android.content.Intent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -26,7 +25,7 @@ import com.xytsz.xytsz.activity.SendActivity;
 import com.xytsz.xytsz.base.BaseFragment;
 
 import com.xytsz.xytsz.global.GlobalContanstant;
-import com.xytsz.xytsz.service.LocationService;
+
 import com.xytsz.xytsz.util.IntentUtil;
 import com.xytsz.xytsz.util.SpUtils;
 import com.xytsz.xytsz.util.ToastUtil;
@@ -55,8 +54,7 @@ public class HomeFragment extends BaseFragment {
     private double latitude;
     public BDLocationListener myListener = new MyListener();
     private View.OnClickListener listener = new MyListener();
-
-
+    private int role;
 
 
     @Override
@@ -126,7 +124,6 @@ public class HomeFragment extends BaseFragment {
         }*/
 
 
-
         //是否显示缩放按钮
         mapview.showZoomControls(false);
         //是否显示地图标尺
@@ -151,7 +148,7 @@ public class HomeFragment extends BaseFragment {
         LocationClientOption option = new LocationClientOption();
         option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);// 可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
         option.setCoorType("bd09ll");// 可选，默认gcj02，设置返回的定位结果坐标系
-        int span = 3600*1000;
+        int span = 3600 * 1000;
         option.setScanSpan(span);// 可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
         option.setIsNeedAddress(true);// 可选，设置是否需要地址信息，默认不需要
         option.setOpenGps(true);// 可选，默认false,设置是否使用gps
@@ -177,8 +174,8 @@ public class HomeFragment extends BaseFragment {
     public void onStart() {
         super.onStart();
         locationClient.start();
+        role = SpUtils.getInt(getContext(), GlobalContanstant.ROLE);
     }
-
 
 
     @Override
@@ -210,13 +207,17 @@ public class HomeFragment extends BaseFragment {
             latitude = bdLocation.getLatitude();
             //经纬度  填的是纬度，经度
             LatLng latlng = new LatLng(latitude, longitude);
-            if (map != null) {
-                map.setMapStatus(MapStatusUpdateFactory.newLatLng(latlng));
-                markMe(latlng);
-            }else{
-                ToastUtil.shortToast(getContext(),"无法定位，请检查网络");
-            }
+            try {
+                if (map != null) {
+                    map.setMapStatus(MapStatusUpdateFactory.newLatLng(latlng));
+                    markMe(latlng);
+                } else {
+                    ToastUtil.shortToast(getContext(), "无法定位，请检查网络");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
 
+            }
 
 
         }
@@ -225,28 +226,58 @@ public class HomeFragment extends BaseFragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.ll_home_report:
+
                     IntentUtil.startActivity(getContext(), ReportActivity.class);
+
                     break;
                 case R.id.ll_home_review:
-                    IntentUtil.startActivity(getContext(),ReviewActivity.class);
+                    if (role == 1) {
+                        IntentUtil.startActivity(getContext(), ReviewActivity.class);
+                    } else {
+                        ToastUtil.shortToast(getContext(), "您没有审核的权限");
+                    }
+                    //IntentUtil.startActivity(getContext(), ReviewActivity.class);
+
                     break;
                 case R.id.ll_home_send:
-                    IntentUtil.startActivity(getContext(), SendActivity.class);
+                    //下派
+                    if (role == 1) {
+                        IntentUtil.startActivity(getContext(), SendActivity.class);
+                    } else {
+                        ToastUtil.shortToast(getContext(), "您没有下派的权限");
+                    }
+                    //IntentUtil.startActivity(getContext(), SendActivity.class);
                     break;
                 case R.id.ll_home_deal:
-                    IntentUtil.startActivity(getContext(), DealActivity.class);
+                    //处置 1，2
+                    if (role == 1 || role == 2) {
+                        IntentUtil.startActivity(getContext(), DealActivity.class);
+                    } else {
+                        ToastUtil.shortToast(getContext(), "您没有处置的权限");
+                    }
+                    //IntentUtil.startActivity(getContext(), DealActivity.class);
                     break;
                 case R.id.ll_home_uncheck:
-                    IntentUtil.startActivity(getContext(), PostActivity.class);
+                    //报验
+                    if (role == 1 || role == 2) {
+                        IntentUtil.startActivity(getContext(), PostActivity.class);
+                    } else {
+                        ToastUtil.shortToast(getContext(), "您没有报验的权限");
+                    }
+                    //IntentUtil.startActivity(getContext(), PostActivity.class);
                     break;
                 case R.id.ll_home_check:
-                    IntentUtil.startActivity(getContext(), CheckActivity.class);
+                    //验收
+                    if (role == 1) {
+                        IntentUtil.startActivity(getContext(), CheckActivity.class);
+                    } else {
+                        ToastUtil.shortToast(getContext(), "您没有验收的权限");
+                    }
+                    //IntentUtil.startActivity(getContext(), CheckActivity.class);
                     break;
             }
         }
     }
-
-
 
 
 }
