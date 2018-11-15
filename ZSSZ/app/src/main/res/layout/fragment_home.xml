@@ -2,264 +2,258 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/cc_green"
-    android:orientation="vertical">
+    android:background="@color/white"
+    android:orientation="vertical"
+>
+
 
     <com.baidu.mapapi.map.TextureMapView
         android:id="@+id/home_mv"
         android:layout_width="match_parent"
-        android:layout_height="300dp" />
+        android:layout_height="260dp" />
 
-    <!--第一行-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <!--第一行-->
         <LinearLayout
-            android:id="@+id/ll_home_report"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/home_report"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/ll_home_report"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_report" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+                    android:id="@+id/home_report"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_report" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_report"
+                    android:layout_marginTop="4dp"
                     android:padding="8dp"
-                    android:text="上报" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
                     android:gravity="center"
-                    android:padding="2dp"
-                    android:text="23"
-                    android:visibility="invisible" />
-            </FrameLayout>
-        </LinearLayout>
+                    android:text="@string/reprote"
+                    android:textSize="15sp" />
+            </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/ll_home_deal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/home_deal"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/ll_home_deal"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_deal" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+                    android:id="@+id/home_deal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_deal" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_deal"
+                    android:layout_marginTop="4dp"
                     android:padding="8dp"
-                    android:text="处置" />
+                    android:text="@string/deal"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_home_deal_number"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="-12dp"
+                    android:layout_toRightOf="@+id/home_deal"
+                    android:background="@mipmap/iv_text_number"
                     android:gravity="center"
-                    android:text="3"
+                    android:visibility="gone"
                     android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="invisible" />
-            </FrameLayout>
-        </LinearLayout>
+                    android:textSize="10sp" />
 
-        <LinearLayout
-            android:id="@+id/ll_home_uncheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/home_post"
-                android:layout_width="wrap_content"
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/ll_home_uncheck"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_post" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+                    android:id="@+id/home_post"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_post" />
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_post"
+                    android:layout_marginTop="4dp"
                     android:padding="8dp"
-                    android:text="报验" />
+                    android:text="@string/post"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_home_unchecek_number"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="-12dp"
+                    android:layout_toRightOf="@+id/home_post"
+                    android:background="@mipmap/iv_text_number"
                     android:gravity="center"
-                    android:text="23"
+                    android:visibility="gone"
                     android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="invisible" />
-            </FrameLayout>
+                    android:textSize="10sp" />
+
+            </RelativeLayout>
         </LinearLayout>
-    </LinearLayout>
-    <!--第二行-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
+        <!--第二行-->
         <LinearLayout
-            android:id="@+id/ll_home_review"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/home_review"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/ll_home_review"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_review" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+                    android:id="@+id/home_review"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_review" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_review"
+                    android:layout_marginTop="4dp"
                     android:padding="8dp"
-                    android:text="审核" />
+                    android:text="@string/review"
+                    android:textSize="15sp" />
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/tv_home_review_number"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="-12dp"
+                    android:layout_toRightOf="@+id/home_review"
+                    android:background="@mipmap/iv_text_number"
                     android:gravity="center"
-                    android:text="23"
                     android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="invisible" />
-            </FrameLayout>
-        </LinearLayout>
+                    android:textSize="10sp" />
+            </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/ll_home_send"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/home_send"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/ll_home_send"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_send" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+                    android:id="@+id/home_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_send" />
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_send"
+                    android:layout_marginTop="4dp"
                     android:padding="8dp"
-                    android:text="下派" />
+                    android:text="@string/send"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_home_send_number"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="-12dp"
+                    android:layout_toRightOf="@+id/home_send"
+                    android:background="@mipmap/iv_text_number"
                     android:gravity="center"
-                    android:text="3"
+                    android:visibility="gone"
                     android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="invisible" />
-            </FrameLayout>
-        </LinearLayout>
+                    android:textSize="10sp" />
 
-        <LinearLayout
-            android:id="@+id/ll_home_check"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/home_check"
-                android:layout_width="wrap_content"
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/ll_home_check"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/home_check" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                <ImageView
+
+                    android:id="@+id/home_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/home_check" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/home_check"
                     android:padding="8dp"
-                    android:text="验收" />
+                    android:text="@string/check"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_home_check_number"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="top|right"
-                    android:background="@drawable/tv_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="-12dp"
+                    android:layout_toRightOf="@+id/home_check"
+                    android:background="@mipmap/iv_text_number"
                     android:gravity="center"
-                    android:text="3"
+                    android:visibility="gone"
                     android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="invisible" />
+                    android:textSize="10sp" />
 
-            </FrameLayout>
+
+            </RelativeLayout>
         </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>
+
 

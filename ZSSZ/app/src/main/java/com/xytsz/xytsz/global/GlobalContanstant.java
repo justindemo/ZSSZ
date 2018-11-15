@@ -2,6 +2,9 @@ package com.xytsz.xytsz.global;
 
 /**
  * Created by admin on 2017/1/3.
+ *
+ *
+ *
  */
 public class GlobalContanstant {
     public static final String LOGINID = "LOGINID";
@@ -14,10 +17,10 @@ public class GlobalContanstant {
     public static final String PROBLEMDESC = "PROBLEMDESC";
     public static final String ISFIRSTENTER = "ISFIRSTENTER";
     /*
-    * 审核数据*/
+    * 审核页面数据*/
     public static final int GETREVIEW = 0;
     /*
-    * 下派数据*/
+    * 下派页面数据*/
     public static final int GETSEND = 1;
     /*
     * 处置数据*/
@@ -26,7 +29,7 @@ public class GlobalContanstant {
     * 报验数据*/
     public static final int GETPOST = 2;
     /*
-    * 验收数据*/
+    * 验收的数据*/
     public static final int GETCHECK = 3;
     /*
     * 验收通过数据*/
@@ -49,4 +52,25 @@ public class GlobalContanstant {
     public static final String PERSONNAMELIST = "PERSONNAMELIST";
     public static final String PERSONIDLIST = "PERSONIDLIST";
     public static final String ROLE = "ROLE";
+    public static final String ISPOSTFIRST = "isPostfirst";
+    public static final String ISPOSTFIRST1 = "isPostfirst1";
+    public static final String ISPOSTSecond = "isPostSecond";
+    public static final int UNUSEDID = 100;
+
+    public static final int CHECKROADPASS = 509;
+    public static final int CHECKROADFAIL = 510;
+    public static final int FAIL = 500;
+    public static final int CHECKFAIL = 600;
+
+
+    public static final int REPORTEFAIL = 66600;
+    public static final int IMAGEFAIL = 60000;
+    public static final int REPORTESUCCESS = 6002;
+    public static final String isOncreate ="isOncreate";
+    public static final int MYSENDFAIL = 50001;
+    public static final int MYSENDSUCCESS = 50002;
+    public static final int CHECKPASS = 508;
+    public static final int PERSONLISTFAIL = 50003;
+    public static final int PERSONLISTSUCCESS = 50004;
+    public static final String ISFIRSTLOCATE = "isFirstLocate";
 }

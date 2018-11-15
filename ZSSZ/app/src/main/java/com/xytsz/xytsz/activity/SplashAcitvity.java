@@ -41,12 +41,14 @@ public class SplashAcitvity extends AppCompatActivity {
             public void onAnimationEnd(Animation animation) {
 
                 boolean isfirst = SpUtils.getBoolean(SplashAcitvity.this, GlobalContanstant.ISFIRSTENTER,true);
+                String loginId = SpUtils.getString(getApplicationContext(), GlobalContanstant.LOGINID);
                 if (isfirst){
                     IntentUtil.startActivity(SplashAcitvity.this,GuideActivity.class);
+                }else if (loginId == null || loginId.isEmpty()){
+                    IntentUtil.startActivity(SplashAcitvity.this,MainActivity.class);
+
                 }else {
-
                     IntentUtil.startActivity(SplashAcitvity.this,HomeActivity.class);
-
                 }
                 finish();
 

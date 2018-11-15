@@ -1,6 +1,8 @@
 package com.xytsz.xytsz.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -10,13 +12,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.reflect.TypeToken;
@@ -24,8 +29,10 @@ import com.xytsz.xytsz.R;
 import com.xytsz.xytsz.bean.DiseaseInformation;
 import com.xytsz.xytsz.bean.ImageUrl;
 import com.xytsz.xytsz.bean.Review;
+import com.xytsz.xytsz.bean.Unit;
 import com.xytsz.xytsz.global.GlobalContanstant;
 import com.xytsz.xytsz.net.NetUrl;
+import com.xytsz.xytsz.util.BitmapUtil;
 import com.xytsz.xytsz.util.JsonUtil;
 import com.xytsz.xytsz.util.SpUtils;
 import com.xytsz.xytsz.util.ToastUtil;
@@ -46,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -61,7 +69,12 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
     private static final int IS_PHOTO_SUCCESS1 = 10000003;
     private static final int IS_PHOTO_SUCCESS3 = 10000005;
     private static final int IS_PHOTO_SUCCESS2 = 10000004;
-
+    @Bind(R.id.uncheck_progressbar)
+    LinearLayout uncheckProgressbar;
+    @Bind(R.id.uncheck_et_num)
+    EditText uncheckEtNum;
+    @Bind(R.id.uncheck_tv_unit)
+    TextView uncheckTvUnit;
     private boolean isPostFirst;
     @Bind(R.id.iv_predeal_icon1)
     ImageView ivPredealIcon1;
@@ -98,34 +111,137 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         public void handleMessage(Message msg) {
 
             switch (msg.what) {
+                case GlobalContanstant.FAIL:
+                    ToastUtil.shortToast(getApplicationContext(), "数据未加载");
+                    break;
+                case GlobalContanstant.MYSENDSUCCESS:
+                    String data = (String) msg.obj;
+                    unitLists = JsonUtil.jsonToBean(data, new TypeToken<List<Unit>>() {
+                    }.getType());
+                    units = new String[unitLists.size()];
+                    for (int i = 0; i < unitLists.size(); i++) {
+                        units[i] = unitLists.get(i).getInfo();
+                    }
+
+                    new AlertDialog.Builder(UnCheckActivity.this).setTitle("请选择")
+                            .setSingleChoiceItems(units, 0, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    uncheckTvUnit.setText(units[which]);
+                                    dialog.dismiss();
+
+                                }
+                            }).create().show();
+
+                    break;
+
+                case GlobalContanstant.CHECKFAIL:
+                    ToastUtil.shortToast(getApplicationContext(), "上传失败");
+                    uncheckProgressbar.setVisibility(View.GONE);
+                    btUncheckDealed.setVisibility(View.VISIBLE);
+                    break;
+
                 case ISPOST:
                     String isPost = (String) msg.obj;
-                    if (isPost.equals("true")) {
-                        ToastUtil.shortToast(getApplicationContext(), "报验成功");
-                        goHome();
+                    if (isPost != null) {
+                        if (isPost.equals("true")) {
+                            ToastUtil.shortToast(getApplicationContext(), "上传图片中");
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    for (int i = 0; i < fileNamesss.size(); i++) {
+                                        diseaseInformation.photoName = fileNamesss.get(i);
+                                        diseaseInformation.encode = imageBase64Stringsss.get(i);
+                                        diseaseInformation.taskNumber = taskNumber;
+
+                                        try {
+                                            isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETCHECK);
+                                        } catch (Exception e) {
+                                            Message message = Message.obtain();
+                                            message.what = GlobalContanstant.CHECKFAIL;
+                                            handler.sendMessage(message);
+                                        }
+
+
+                                    }
+                                    Message message = Message.obtain();
+                                    message.what = IS_PHOTO_SUCCESS3;
+                                    message.obj = isphotoSuccess;
+                                    handler.sendMessage(message);
+
+                                }
+                            }.start();
+                        } else {
+                            ToastUtil.shortToast(getApplicationContext(), "上传失败");
+                            btUncheckDealed.setVisibility(View.VISIBLE);
+                            uncheckProgressbar.setVisibility(View.GONE);
+                        }
+                    } else {
+                        ToastUtil.shortToast(getApplicationContext(), "上传失败");
+                        btUncheckDealed.setVisibility(View.VISIBLE);
+                        uncheckProgressbar.setVisibility(View.GONE);
                     }
                     break;
                 case IS_PHOTO_SUCCESS1:
                     String isphotoSuccess = (String) msg.obj;
-                    if (isphotoSuccess.equals("true")) {
-                        ToastUtil.shortToast(getApplicationContext(), "处置前照片上报成功");
-                        btUncheckPredeal.setEnabled(false);
-                        isPostFirst = true;
+                    if (isphotoSuccess != null) {
+                        if (isphotoSuccess.equals("true")) {
+                            ToastUtil.shortToast(getApplicationContext(), "处置前照片上报成功");
+                            ivPredealIcon1.setEnabled(false);
+                            ivPredealIcon2.setEnabled(false);
+                            ivPredealIcon3.setEnabled(false);
+                            btUncheckPredeal.setVisibility(View.GONE);
+                            isPostFirst = true;
+
+                        } else {
+                            imageBase64Strings.clear();
+                            ToastUtil.shortToast(getApplicationContext(), "照片上报失败");
+                        }
+                    } else {
+                        imageBase64Strings.clear();
+                        ToastUtil.shortToast(getApplicationContext(), "照片上报失败");
                     }
+
                     break;
                 case IS_PHOTO_SUCCESS2:
                     String isphotoSuccess1 = (String) msg.obj;
-                    if (isphotoSuccess1.equals("true")) {
-                        ToastUtil.shortToast(getApplicationContext(), "处置中照片上报成功");
-                        btUncheckDealing.setEnabled(false);
-                        isPostFirst = true;
-                        isPostSecond = true;
+                    if (isphotoSuccess1 != null) {
+                        if (isphotoSuccess1.equals("true")) {
+                            ToastUtil.shortToast(getApplicationContext(), "处置中照片上报成功");
+                            btUncheckDealing.setVisibility(View.GONE);
+                            ivDealingIcon1.setEnabled(false);
+                            ivDealingIcon2.setEnabled(false);
+                            ivDealingIcon3.setEnabled(false);
+                            isPostSecond = true;
+
+                        } else {
+                            imageBase64Stringss.clear();
+                            ToastUtil.shortToast(getApplicationContext(), "照片上报失败");
+                        }
+                    } else {
+                        imageBase64Stringss.clear();
+                        ToastUtil.shortToast(getApplicationContext(), "照片上报失败");
                     }
+
                     break;
                 case IS_PHOTO_SUCCESS3:
                     String isphotoSuccess2 = (String) msg.obj;
-                    if (isphotoSuccess2.equals("true")) {
-                        ToastUtil.shortToast(getApplicationContext(), "报验成功");
+                    if (isphotoSuccess2 != null) {
+                        if (isphotoSuccess2.equals("true")) {
+                            uncheckProgressbar.setVisibility(View.GONE);
+                            goHome();
+                            ToastUtil.shortToast(getApplicationContext(), "报验成功");
+                        } else {
+                            imageBase64Stringsss.clear();
+                            btUncheckDealed.setVisibility(View.VISIBLE);
+                            uncheckProgressbar.setVisibility(View.GONE);
+                            ToastUtil.shortToast(getApplicationContext(), "照片上报失败");
+                        }
+                    } else {
+                        imageBase64Stringsss.clear();
+                        btUncheckDealed.setVisibility(View.VISIBLE);
+                        uncheckProgressbar.setVisibility(View.GONE);
+                        ToastUtil.shortToast(getApplicationContext(), "图片未上传");
                     }
                     break;
             }
@@ -136,6 +252,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
     private String taskNumber;
     private String isphotoSuccess;
     private Uri fileUri;
+    private String dialogtitle;
+    private List<Unit> unitLists;
 
 
     @Override
@@ -151,7 +269,28 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
         setContentView(R.layout.activity_uncheck);
         ButterKnife.bind(this);
+        initAcitionbar();
+        dialogtitle = this.getString(R.string.report_dialog_title);
         initData();
+    }
+
+    private String[] items = new String[]{"拍照", "照片"};
+
+
+    private void initAcitionbar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setTitle(R.string.post);
+        }
+    }
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 
 
@@ -161,22 +300,19 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         //进入页面 开启线程 去请求网络是否有处置前 和处置中照片
         taskNumber = reviewRoadDetail.getTaskNumber();
 
-
         new Thread() {
             @Override
             public void run() {
                 //处置前
-
                 try {
                     //根据taskNumber 获取url
                     String preDealJson = getPreImgUrl(taskNumber);
 
                     //如果有值 先赋值  不能点击
                     if (preDealJson != null) {
-                        final List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(preDealJson, new TypeToken<List<ImageUrl>>() {
-                        }.getType());
-
-
+                        final List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(preDealJson,
+                                new TypeToken<List<ImageUrl>>() {
+                                }.getType());
 
                         runOnUiThread(new Runnable() {
                             @Override
@@ -184,7 +320,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
                                 switch (imageUrlList.size()) {
                                     //如果没有处置前的图片 都不能点击
-
                                     case 0:
                                         btUncheckDealing.setEnabled(false);
                                         btUncheckPredeal.setEnabled(false);
@@ -194,15 +329,16 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                     case 1:
                                         isPostFirst = true;
                                         btUncheckDealed.setEnabled(false);
-                                        btUncheckPredeal.setVisibility(View.INVISIBLE);
+                                        btUncheckPredeal.setVisibility(View.GONE);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(0).getImgurl()).into(ivPredealIcon1);
                                         ivPredealIcon1.setEnabled(false);
                                         ivPredealIcon2.setVisibility(View.INVISIBLE);
                                         ivPredealIcon3.setVisibility(View.INVISIBLE);
                                         break;
                                     case 2:
+                                        isPostFirst = true;
                                         btUncheckDealed.setFocusable(false);
-                                        btUncheckPredeal.setVisibility(View.INVISIBLE);
+                                        btUncheckPredeal.setVisibility(View.GONE);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(0).getImgurl()).into(ivPredealIcon1);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(1).getImgurl()).into(ivPredealIcon2);
                                         ivPredealIcon1.setEnabled(false);
@@ -211,8 +347,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         ivPredealIcon3.setVisibility(View.INVISIBLE);
                                         break;
                                     case 3:
+                                        isPostFirst = true;
                                         btUncheckDealed.setEnabled(false);
-                                        btUncheckPredeal.setVisibility(View.INVISIBLE);
+                                        btUncheckPredeal.setVisibility(View.GONE);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(0).getImgurl()).into(ivPredealIcon1);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(1).getImgurl()).into(ivPredealIcon2);
                                         Glide.with(getApplicationContext()).load(imageUrlList.get(2).getImgurl()).into(ivPredealIcon3);
@@ -241,14 +378,13 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                             public void run() {
 
 
-
                                 switch (imageIngUrlList.size()) {
                                     case 0:
                                         btUncheckDealing.setEnabled(false);
                                         btUncheckDealed.setEnabled(false);
                                         break;
                                     case 1:
-                                        btUncheckDealing.setVisibility(View.INVISIBLE);
+                                        btUncheckDealing.setVisibility(View.GONE);
                                         btUncheckDealed.setEnabled(false);
                                         Glide.with(getApplicationContext()).load(imageIngUrlList.get(0).getImgurl()).into(ivDealingIcon1);
                                         ivDealingIcon1.setEnabled(false);
@@ -260,18 +396,19 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         isPostSecond = true;
                                         break;
                                     case 2:
-                                        btUncheckDealing.setVisibility(View.INVISIBLE);
+                                        btUncheckDealing.setVisibility(View.GONE);
                                         btUncheckDealed.setEnabled(false);
                                         Glide.with(getApplicationContext()).load(imageIngUrlList.get(0).getImgurl()).into(ivDealingIcon1);
                                         Glide.with(getApplicationContext()).load(imageIngUrlList.get(1).getImgurl()).into(ivDealingIcon2);
                                         ivDealingIcon1.setEnabled(false);
                                         ivDealingIcon2.setEnabled(false);
-                                        ivDealingIcon3.setVisibility(View.INVISIBLE);
                                         ivDealingIcon3.setEnabled(false);
-
+                                        ivDealingIcon3.setVisibility(View.INVISIBLE);
+                                        isPostFirst = true;
+                                        isPostSecond = true;
                                         break;
                                     case 3:
-                                        btUncheckDealing.setVisibility(View.INVISIBLE);
+                                        btUncheckDealing.setVisibility(View.GONE);
                                         btUncheckDealed.setEnabled(false);
                                         Glide.with(getApplicationContext()).load(imageIngUrlList.get(0).getImgurl()).into(ivDealingIcon1);
                                         Glide.with(getApplicationContext()).load(imageIngUrlList.get(1).getImgurl()).into(ivDealingIcon2);
@@ -279,6 +416,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                         ivDealingIcon1.setEnabled(false);
                                         ivDealingIcon2.setEnabled(false);
                                         ivDealingIcon3.setEnabled(false);
+                                        isPostFirst = true;
+                                        isPostSecond = true;
                                         break;
                                 }
 
@@ -288,7 +427,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+
                 }
 
             }
@@ -353,7 +492,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         soapObject.addProperty("ImgBase64String", diseaseInformation.encode);   //参数2  图片字符串
         soapObject.addProperty("PhaseId", phaseIndication);
         Log.i("soapo", soapObject.toString());
-        Log.i("upload", "发送给服务器的：" + diseaseInformation.encode);
         //设置访问地址 和 超时时间
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
         envelope.bodyOut = soapObject;
@@ -383,12 +521,14 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
 
     private String getCurrentTime() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
         String actualTime = format.format(new Date(System.currentTimeMillis()));
         return actualTime;
     }
 
-    private String toManagement(int phaseIndication, Review.ReviewRoad.ReviewRoadDetail reviewRoadDetail) throws Exception {
+
+    public static String toManagement(int phaseIndication, Review.ReviewRoad.ReviewRoadDetail reviewRoadDetail) throws Exception {
 
         SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.postmethodName);
         soapObject.addProperty("TaskNumber", reviewRoadDetail.getTaskNumber());
@@ -396,6 +536,8 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         soapObject.addProperty("ActualCompletionTime", reviewRoadDetail.getActualCompletionTime());
         soapObject.addProperty("ActualCompletionInfo", reviewRoadDetail.getActualCompletionInfo());
         soapObject.addProperty("PhaseIndication", phaseIndication);
+        soapObject.addProperty("vectorID", reviewRoadDetail.getUnitID());
+        soapObject.addProperty("Number", reviewRoadDetail.getFacilityNum());
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
         envelope.setOutputSoapObject(soapObject);
@@ -414,7 +556,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
 
     private DiseaseInformation diseaseInformation;
-    private static final String iconPath = "/sdcard/UncheckImage";//图片的存储目录
+    private static final String iconPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Zssz/Image_uncheck/";//图片的存储目录
 
     public String saveToSDCard(Bitmap bitmap) {
         //先要判断SD卡是否存在并且挂载
@@ -431,13 +573,13 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);//把图片数据写入文件
                 photo2Base64(path);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+
             } finally {
                 if (outputStream != null) {
                     try {
                         outputStream.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+
                     }
                 }
             }
@@ -463,9 +605,9 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
             fis.close();
             return uploadBuffer;
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
         } catch (IOException e) {
-            e.printStackTrace();
+
         }
         return null;
     }
@@ -475,36 +617,82 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
 
         switch (view.getId()) {
             case R.id.iv_predeal_icon1:
-                Intent intent1 = new Intent("android.media.action.IMAGE_CAPTURE");
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent1 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file = new File(getPhotopath(1));
+                                fileUri = Uri.fromFile(file);
+                                intent1.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent1, 9001);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9011);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-                File file = new File(getPhotopath(1));
-                fileUri = Uri.fromFile(file);
-                intent1.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-
-                startActivityForResult(intent1, 9001);
                 break;
             case R.id.iv_predeal_icon2:
-                Intent intent2 = new Intent("android.media.action.IMAGE_CAPTURE");
 
-                File file1 = new File(getPhotopath(2));
-                fileUri = Uri.fromFile(file1);
-                intent2.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent2 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file1 = new File(getPhotopath(2));
+                                fileUri = Uri.fromFile(file1);
+                                intent2.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent2, 9002);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9012);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-                startActivityForResult(intent2, 9002);
                 break;
             case R.id.iv_predeal_icon3:
-                Intent intent3 = new Intent("android.media.action.IMAGE_CAPTURE");
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent3 = new Intent("android.media.action.IMAGE_CAPTURE");
 
-                File file2 = new File(getPhotopath(3));
-                fileUri = Uri.fromFile(file2);
-                intent3.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                File file2 = new File(getPhotopath(3));
+                                fileUri = Uri.fromFile(file2);
+                                intent3.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+
+                                startActivityForResult(intent3, 9003);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9013);
+                                break;
+                        }
+                    }
+                }).create().show();
 
 
-                startActivityForResult(intent3, 9003);
                 break;
 
             // 点击上报处置前的照片
             case R.id.bt_uncheck_predeal:
+                ToastUtil.shortToast(getApplicationContext(), "正在上传处置前照片");
                 new Thread() {
 
                     @Override
@@ -513,55 +701,103 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                             diseaseInformation.photoName = fileNames.get(i);
                             diseaseInformation.encode = imageBase64Strings.get(i);
                             diseaseInformation.taskNumber = taskNumber;
-                            Log.i("taskNumber", diseaseInformation.taskNumber);
                             try {
                                 isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETSEND);
                             } catch (Exception e) {
-                                e.printStackTrace();
-                                return;
+                                Message message = Message.obtain();
+                                message.what = GlobalContanstant.CHECKFAIL;
+                                handler.sendMessage(message);
                             }
 
-                            Message message = Message.obtain();
-                            message.what = IS_PHOTO_SUCCESS1;
-                            message.obj = isphotoSuccess;
-                            handler.sendMessage(message);
                         }
+
+                        Message message = Message.obtain();
+                        message.what = IS_PHOTO_SUCCESS1;
+                        message.obj = isphotoSuccess;
+                        handler.sendMessage(message);
 
                     }
                 }.start();
 
                 break;
             case R.id.iv_dealing_icon1:
-                Intent intent4 = new Intent("android.media.action.IMAGE_CAPTURE");
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent4 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file3 = new File(getPhotopath(4));
+                                fileUri = Uri.fromFile(file3);
+                                intent4.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent4, 9004);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9014);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-                File file3 = new File(getPhotopath(4));
-                fileUri = Uri.fromFile(file3);
-                intent4.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
-                startActivityForResult(intent4, 9004);
                 break;
             case R.id.iv_dealing_icon2:
-                Intent intent5 = new Intent("android.media.action.IMAGE_CAPTURE");
-                File file4 = new File(getPhotopath(5));
-                fileUri = Uri.fromFile(file4);
-                intent5.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent5 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file4 = new File(getPhotopath(5));
+                                fileUri = Uri.fromFile(file4);
+                                intent5.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
-                startActivityForResult(intent5, 9005);
+                                startActivityForResult(intent5, 9005);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9015);
+                                break;
+                        }
+                    }
+                }).create().show();
+
                 break;
             case R.id.iv_dealing_icon3:
-                Intent intent6 = new Intent("android.media.action.IMAGE_CAPTURE");
-                File file5 = new File(getPhotopath(6));
-                fileUri = Uri.fromFile(file5);
-                intent6.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent6 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file5 = new File(getPhotopath(6));
+                                fileUri = Uri.fromFile(file5);
+                                intent6.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent6, 9006);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9016);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-
-                startActivityForResult(intent6, 9006);
                 break;
             //点击上报正在处置图片
             case R.id.bt_uncheck_dealing:
                 //点击上报ing的图片的时候先判断是否有上报处置前的照片
                 //是否有处置前的照片
+
                 if (isPostFirst) {
+                    ToastUtil.shortToast(getApplicationContext(), "正在上传处置中照片");
                     new Thread() {
                         @Override
                         public void run() {
@@ -569,20 +805,21 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                                 diseaseInformation.photoName = fileNamess.get(i);
                                 diseaseInformation.encode = imageBase64Stringss.get(i);
                                 diseaseInformation.taskNumber = taskNumber;
-                                Log.i("taskNumber", diseaseInformation.taskNumber);
-
                                 try {
                                     isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETDEAL);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
-                                    return;
+                                    Message message = Message.obtain();
+                                    message.what = GlobalContanstant.CHECKFAIL;
+                                    handler.sendMessage(message);
+
                                 }
 
-                                Message message = Message.obtain();
-                                message.what = IS_PHOTO_SUCCESS2;
-                                message.obj = isphotoSuccess;
-                                handler.sendMessage(message);
                             }
+
+                            Message message = Message.obtain();
+                            message.what = IS_PHOTO_SUCCESS2;
+                            message.obj = isphotoSuccess;
+                            handler.sendMessage(message);
 
                         }
                     }.start();
@@ -592,119 +829,135 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 break;
             case R.id.iv_dealed_icon1:
-                Intent intent7 = new Intent("android.media.action.IMAGE_CAPTURE");
-                File file6 = new File(getPhotopath(7));
-                fileUri = Uri.fromFile(file6);
-                intent7.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent7 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file6 = new File(getPhotopath(7));
+                                fileUri = Uri.fromFile(file6);
+                                intent7.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent7, 9007);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9017);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-                startActivityForResult(intent7, 9007);
                 break;
             case R.id.iv_dealed_icon2:
-                Intent intent8 = new Intent("android.media.action.IMAGE_CAPTURE");
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent8 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file7 = new File(getPhotopath(8));
+                                fileUri = Uri.fromFile(file7);
+                                intent8.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent8, 9008);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9018);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-                File file7 = new File(getPhotopath(8));
-                fileUri = Uri.fromFile(file7);
-                intent8.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-
-                startActivityForResult(intent8, 9008);
                 break;
             case R.id.iv_dealed_icon3:
-                Intent intent9 = new Intent("android.media.action.IMAGE_CAPTURE");
-                File file8 = new File(getPhotopath(9));
-                fileUri = Uri.fromFile(file8);
-                intent9.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                new AlertDialog.Builder(UnCheckActivity.this).setTitle(dialogtitle).setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                dialog.dismiss();
+                                Intent intent9 = new Intent("android.media.action.IMAGE_CAPTURE");
+                                File file8 = new File(getPhotopath(9));
+                                fileUri = Uri.fromFile(file8);
+                                intent9.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                                startActivityForResult(intent9, 9009);
+                                btUncheckDealed.setFocusable(true);
+                                break;
+                            case 1:
+                                dialog.dismiss();
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(intent, 9019);
+                                btUncheckDealed.setFocusable(true);
+                                break;
+                        }
+                    }
+                }).create().show();
 
-
-                startActivityForResult(intent9, 9009);
-                btUncheckDealed.setFocusable(true);
                 break;
             case R.id.bt_uncheck_dealed:
 
                 if (isPostFirst) {
                     if (isPostSecond) {
-                        /*new Thread() {
-                            @Override
-                            public void run() {
+                        if (uncheckTvUnit.getText() != null && !uncheckTvUnit.getText().toString().
+                                isEmpty()) {
+                            if (uncheckEtNum.getText() != null && !uncheckEtNum.getText().toString().isEmpty()) {
 
-                                try {
-                                    String prejson = getPreImgUrl(taskNumber);
-                                    String dealingJson = getRngImgUrl(taskNumber);
-                                    List<ImageUrl> imageUrlList = JsonUtil.jsonToBean(prejson, new TypeToken<List<ImageUrl>>() {
-                                    }.getType());
-                                    List<ImageUrl> imageIngUrlList = JsonUtil.jsonToBean(dealingJson, new TypeToken<List<ImageUrl>>() {
-                                    }.getType());
 
-                                    if (imageUrlList.size() == 0 || imageIngUrlList.size() == 0) {
+                                ToastUtil.shortToast(getApplicationContext(), "开始上传");
+                                uncheckProgressbar.setVisibility(View.VISIBLE);
+                                btUncheckDealed.setVisibility(View.GONE);
 
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(getApplicationContext(), "请先上报处置前或处置中的照片", Toast.LENGTH_LONG).show();
-                                            }
-                                        });
-
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    ToastUtil.shortToast(getApplicationContext(), "网络异常");
-                                }
-                            }
-                        }.start();*/
-
-                        personID = SpUtils.getInt(getApplicationContext(), GlobalContanstant.PERSONID);
-                        //维修说明
-                        String repair = etRepairStatu.getText().toString();
-                        reviewRoadDetail.setActualCompletionInfo(repair);
-
-                        reviewRoadDetail.setActualCompletion_Person_ID(personID);
-                        reviewRoadDetail.setActualCompletionTime(getCurrentTime());
-                        diseaseInformation.taskNumber = reviewRoadDetail.getTaskNumber();
-
-                        new Thread() {
-                            @Override
-                            public void run() {
-
-                                //to上传信息以及 维修说明
-                                try {
-
-                                    String isPost = toManagement(GlobalContanstant.GETCHECK, reviewRoadDetail);
-
-                                    //发信息  实现UI更新
-                                    Message message = Message.obtain();
-                                    message.what = ISPOST;
-                                    message.obj = isPost;
-                                    handler.sendMessage(message);
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }.start();
-
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                for (int i = 0; i < fileNamesss.size(); i++) {
-                                    diseaseInformation.photoName = fileNamesss.get(i);
-                                    diseaseInformation.encode = imageBase64Stringsss.get(i);
-                                    diseaseInformation.taskNumber = taskNumber;
-                                    Log.i("taskNumber", diseaseInformation.taskNumber);
-
-                                    try {
-                                        isphotoSuccess = connectWebService(diseaseInformation, GlobalContanstant.GETCHECK);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        return;
+                                personID = SpUtils.getInt(getApplicationContext(), GlobalContanstant.PERSONID);
+                                //维修说明
+                                String repair = etRepairStatu.getText().toString();
+                                reviewRoadDetail.setActualCompletionInfo(repair);
+                                reviewRoadDetail.setFacilityNum(Integer.valueOf(uncheckEtNum.getText().toString().trim()));
+                                String unitstr = uncheckTvUnit.getText().toString();
+                                for (Unit unit : unitLists) {
+                                    if (unitstr.equals(unit.getInfo())) {
+                                        reviewRoadDetail.setUnitID(unit.getVectorID());
                                     }
 
-                                    Message message = Message.obtain();
-                                    message.what = IS_PHOTO_SUCCESS3;
-                                    message.obj = isphotoSuccess;
-                                    handler.sendMessage(message);
                                 }
 
+                                reviewRoadDetail.setActualCompletion_Person_ID(personID);
+                                reviewRoadDetail.setActualCompletionTime(getCurrentTime());
+                                diseaseInformation.taskNumber = reviewRoadDetail.getTaskNumber();
+
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+
+                                        //to上传信息以及 维修说明
+                                        try {
+                                            String isPost = toManagement(GlobalContanstant.GETCHECK,
+                                                    reviewRoadDetail);
+
+                                            //发信息  实现UI更新
+                                            Message message = Message.obtain();
+                                            message.what = ISPOST;
+                                            message.obj = isPost;
+                                            handler.sendMessage(message);
+
+                                        } catch (Exception e) {
+                                            Message message = Message.obtain();
+                                            message.what = GlobalContanstant.CHECKFAIL;
+                                            handler.sendMessage(message);
+                                        }
+                                    }
+                                }.start();
+                            } else {
+                                ToastUtil.shortToast(getApplicationContext(), "请先填写维修量");
                             }
-                        }.start();
+                        } else {
+                            ToastUtil.shortToast(getApplicationContext(), "请先填写维修单位");
+                        }
+
                     } else {
                         ToastUtil.shortToast(getApplicationContext(), "请先上报处置中的照片");
 
@@ -713,8 +966,6 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
                     ToastUtil.shortToast(getApplicationContext(), "请先上报处置前的照片");
 
                 }
-
-
                 break;
         }
     }
@@ -723,7 +974,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         // 照片全路径
         String fileName;
         // 文件夹路径
-        String pathUrl = "/sdcard/Image/mymy/";
+        String pathUrl = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Zssz/Image/mymy/";
         String imageName = "imageTest" + i + ".jpg";
         File file = new File(pathUrl);
         file.mkdirs();// 创建文件夹
@@ -732,21 +983,21 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    private List<String> fileNames = new ArrayList<>();
     /**
      * 处置中的文件名集合
      */
+    private List<String> fileNames = new ArrayList<>();
     private List<String> fileNamess = new ArrayList<>();
     private List<String> fileNamesss = new ArrayList<>();
-    private List<String> imageBase64Strings = new ArrayList<>();
     /**
      * 处置中的base64集合
      */
+    private List<String> imageBase64Strings = new ArrayList<>();
     private List<String> imageBase64Stringss = new ArrayList<>();
     private List<String> imageBase64Stringsss = new ArrayList<>();
 
 
-    private Bitmap getBitmap(ImageView imageView) {
+    private Bitmap getBitmap(ImageView imageView, String path) {
         Bitmap bitmap;
         int width = imageView.getWidth();
 
@@ -755,7 +1006,7 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         BitmapFactory.Options factoryOptions = new BitmapFactory.Options();
 
         factoryOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(fileUri.getPath(), factoryOptions);
+        BitmapFactory.decodeFile(path, factoryOptions);
 
         int imageWidth = factoryOptions.outWidth;
         int imageHeight = factoryOptions.outHeight;
@@ -770,139 +1021,362 @@ public class UnCheckActivity extends AppCompatActivity implements View.OnClickLi
         factoryOptions.inSampleSize = scaleFactor;
         factoryOptions.inPurgeable = true;
 
-        bitmap = BitmapFactory.decodeFile(fileUri.getPath(),
+        bitmap = BitmapFactory.decodeFile(path,
                 factoryOptions);
-        return bitmap;
+
+        int bitmapDegree = BitmapUtil.getBitmapDegree(path);
+        Bitmap rotateBitmap = BitmapUtil.rotateBitmap(bitmap, bitmapDegree);
+        return rotateBitmap;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+
+        if (resultCode == RESULT_CANCELED) {
+            return;
+        }
+
+        Bitmap bitmap;
+        String fileName;
+        String encode;
+        String picturePath;
         if (data == null) {
-            /*ToastUtil.shortToast(getApplicationContext(), "请重新选择");
-        } else {*/
-            Bitmap bitmap;
-            String fileName;
-            String encode;
-            if (requestCode == 9001) {
-                // 有的手机data 为空
-                //bitmap = (Bitmap) data.getExtras().get("data");
-                bitmap = getBitmap(ivPredealIcon1);
+            switch (requestCode) {
+                case 9001:
+                    bitmap = getBitmap(ivPredealIcon1, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivPredealIcon1.setImageBitmap(bitmap);
+                    ivPredealIcon1.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNames.add(fileName);
+                    imageBase64Strings.add(encode);
+                    btUncheckPredeal.setEnabled(true);
+                    btUncheckPredeal.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9002:
+                    bitmap = getBitmap(ivPredealIcon2, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivPredealIcon2.setImageBitmap(bitmap);
+                    ivPredealIcon2.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNames.add(fileName);
+                    imageBase64Strings.add(encode);
+                    btUncheckPredeal.setEnabled(true);
+                    btUncheckPredeal.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9003:
+                    bitmap = getBitmap(ivPredealIcon3, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivPredealIcon3.setImageBitmap(bitmap);
+                    ivPredealIcon3.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNames.add(fileName);
+                    imageBase64Strings.add(encode);
+                    btUncheckPredeal.setEnabled(true);
+                    btUncheckPredeal.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9004:
+                    bitmap = getBitmap(ivDealingIcon1, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealingIcon1.setImageBitmap(bitmap);
+                    ivDealingIcon1.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamess.add(fileName);
+                    imageBase64Stringss.add(encode);
+                    btUncheckDealing.setEnabled(true);
+                    btUncheckDealing.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9005:
 
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivPredealIcon1.setImageBitmap(bitmap);
-                ivPredealIcon1.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNames.add(fileName);
-                imageBase64Strings.add(encode);
-                btUncheckPredeal.setEnabled(true);
-            } else if (requestCode == 9002) {
-                // bitmap = (Bitmap) data.getExtras().get("data");
+                    bitmap = getBitmap(ivDealingIcon2, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealingIcon2.setImageBitmap(bitmap);
+                    ivDealingIcon2.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamess.add(fileName);
+                    imageBase64Stringss.add(encode);
+                    btUncheckDealing.setEnabled(true);
+                    btUncheckDealing.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9006:
+                    //bitmap = (Bitmap) data.getExtras().get("data");
 
-                bitmap = getBitmap(ivPredealIcon2);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivPredealIcon2.setImageBitmap(bitmap);
-                ivPredealIcon2.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNames.add(fileName);
-                imageBase64Strings.add(encode);
-                btUncheckPredeal.setEnabled(true);
-            } else if (requestCode == 9003) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-                bitmap = getBitmap(ivPredealIcon3);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivPredealIcon3.setImageBitmap(bitmap);
-                ivPredealIcon3.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNames.add(fileName);
-                imageBase64Strings.add(encode);
-                btUncheckPredeal.setEnabled(true);
-            } else if (requestCode == 9004) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-                bitmap = getBitmap(ivDealingIcon1);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealingIcon1.setImageBitmap(bitmap);
-                ivDealingIcon1.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamess.add(fileName);
-                imageBase64Stringss.add(encode);
-                btUncheckDealing.setEnabled(true);
-            } else if (requestCode == 9005) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
+                    bitmap = getBitmap(ivDealingIcon3, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealingIcon3.setImageBitmap(bitmap);
+                    ivDealingIcon3.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamess.add(fileName);
+                    imageBase64Stringss.add(encode);
+                    btUncheckDealing.setEnabled(true);
+                    btUncheckDealing.setBackgroundResource(R.drawable.btn_uncheck_press);
+                    break;
+                case 9007:
+                    //bitmap = (Bitmap) data.getExtras().get("data");
+                    bitmap = getBitmap(ivDealedIcon1, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealedIcon1.setImageBitmap(bitmap);
+                    ivDealedIcon1.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamesss.add(fileName);
+                    imageBase64Stringsss.add(encode);
+                    btUncheckDealed.setEnabled(true);
+                    btUncheckDealed.setBackgroundResource(R.drawable.shape_btn_uncheck_press);
+                    break;
+                case 9008:
+                    //bitmap = (Bitmap) data.getExtras().get("data");
+                    bitmap = getBitmap(ivDealedIcon2, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealedIcon2.setImageBitmap(bitmap);
+                    ivDealedIcon2.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamesss.add(fileName);
+                    imageBase64Stringsss.add(encode);
+                    btUncheckDealed.setEnabled(true);
+                    btUncheckDealed.setBackgroundResource(R.drawable.shape_btn_uncheck_press);
+                    break;
+                case 9009:
+                    //bitmap = (Bitmap) data.getExtras().get("data");
 
-                bitmap = getBitmap(ivDealingIcon2);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealingIcon2.setImageBitmap(bitmap);
-                ivDealingIcon2.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamess.add(fileName);
-                imageBase64Stringss.add(encode);
-                btUncheckDealing.setEnabled(true);
-
-            } else if (requestCode == 9006) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-
-                bitmap = getBitmap(ivDealingIcon3);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealingIcon3.setImageBitmap(bitmap);
-                ivDealingIcon3.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamess.add(fileName);
-                imageBase64Stringss.add(encode);
-
-
-                btUncheckDealing.setEnabled(true);
-            } else if (requestCode == 9007) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-                bitmap = getBitmap(ivDealedIcon1);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealedIcon1.setImageBitmap(bitmap);
-                ivDealedIcon1.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamesss.add(fileName);
-                imageBase64Stringsss.add(encode);
-                btUncheckDealed.setEnabled(true);
-            } else if (requestCode == 9008) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-                bitmap = getBitmap(ivDealedIcon2);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealedIcon2.setImageBitmap(bitmap);
-                ivDealedIcon2.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamesss.add(fileName);
-                imageBase64Stringsss.add(encode);
-                btUncheckDealed.setEnabled(true);
-            } else if (requestCode == 9009) {
-                //bitmap = (Bitmap) data.getExtras().get("data");
-
-                bitmap = getBitmap(ivDealedIcon3);
-                fileName = saveToSDCard(bitmap);
-                //将选择的图片设置到控件上
-                ivDealedIcon3.setImageBitmap(bitmap);
-                ivDealedIcon3.setFocusable(false);
-                encode = photo2Base64(path);
-                fileNamesss.add(fileName);
-                imageBase64Stringsss.add(encode);
-
-                btUncheckDealed.setEnabled(true);
+                    bitmap = getBitmap(ivDealedIcon3, fileUri.getPath());
+                    fileName = saveToSDCard(bitmap);
+                    //将选择的图片设置到控件上
+                    ivDealedIcon3.setImageBitmap(bitmap);
+                    ivDealedIcon3.setClickable(false);
+                    encode = photo2Base64(path);
+                    fileNamesss.add(fileName);
+                    imageBase64Stringsss.add(encode);
+                    btUncheckDealed.setEnabled(true);
+                    btUncheckDealed.setBackgroundResource(R.drawable.shape_btn_uncheck_press);
+                    break;
             }
         }
+
+        switch (requestCode) {
+            case 9011:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivPredealIcon1, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNames.add(fileName);
+                imageBase64Strings.add(encode);
+                setParameter(bitmap, ivPredealIcon1, btUncheckPredeal);
+                break;
+            case 9012:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivPredealIcon2, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNames.add(fileName);
+                imageBase64Strings.add(encode);
+                setParameter(bitmap, ivPredealIcon2, btUncheckPredeal);
+                break;
+            case 9013:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivPredealIcon3, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNames.add(fileName);
+                imageBase64Strings.add(encode);
+                setParameter(bitmap, ivPredealIcon3, btUncheckPredeal);
+                break;
+            case 9014:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealingIcon1, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamess.add(fileName);
+                imageBase64Stringss.add(encode);
+                setParameter(bitmap, ivDealingIcon1, btUncheckDealing);
+                break;
+            case 9015:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealingIcon2, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamess.add(fileName);
+                imageBase64Stringss.add(encode);
+                setParameter(bitmap, ivDealingIcon2, btUncheckDealing);
+                break;
+            case 9016:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealingIcon3, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamess.add(fileName);
+                imageBase64Stringss.add(encode);
+                setParameter(bitmap, ivDealingIcon3, btUncheckDealing);
+                break;
+            case 9017:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealedIcon1, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamesss.add(fileName);
+                imageBase64Stringsss.add(encode);
+                setParameter(bitmap, ivDealedIcon1, btUncheckDealed);
+                break;
+            case 9018:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealedIcon2, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamesss.add(fileName);
+                imageBase64Stringsss.add(encode);
+                setParameter(bitmap, ivDealedIcon2, btUncheckDealed);
+                break;
+            case 9019:
+                picturePath = getPicturePath(data);
+                bitmap = getBitmap(ivDealedIcon3, picturePath);
+                if (bitmap == null) {
+                    ToastUtil.shortToast(getApplicationContext(), "此照片为空,重新选择");
+                    return;
+                }
+                fileName = saveToSDCard(bitmap);
+                encode = photo2Base64(path);
+                fileNamesss.add(fileName);
+                imageBase64Stringsss.add(encode);
+                setParameter(bitmap, ivDealedIcon3, btUncheckDealed);
+                break;
+
+
+        }
+
+    }
+
+    private void setParameter(Bitmap bitmap, ImageView imageView,
+                              Button btn) {
+
+        //将选择的图片设置到控件上
+        imageView.setImageBitmap(bitmap);
+        imageView.setClickable(false);
+
+        btn.setEnabled(true);
+        if (btn.getId() == R.id.bt_uncheck_dealed) {
+            btn.setBackgroundResource(R.drawable.shape_btn_uncheck_press);
+        } else {
+            btn.setBackgroundResource(R.drawable.btn_uncheck_press);
+        }
+
+    }
+
+    private String getPicturePath(Intent data) {
+        if (data != null) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+            return picturePath;
+        }
+        return null;
     }
 
 
     private void goHome() {
         Intent intent = new Intent(UnCheckActivity.this, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
     }
+
+    private String[] units;
+
+    @OnClick(R.id.uncheck_tv_unit)
+    public void onViewClicked() {
+        getData();
+
+
+    }
+
+    /**
+     * 获取单位数量
+     */
+    private void getData() {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    String data = getUnitData();
+                    if (data != null) {
+                        Message message = Message.obtain();
+                        message.what = GlobalContanstant.MYSENDSUCCESS;
+                        message.obj = data;
+                        handler.sendMessage(message);
+                    }
+                } catch (Exception e) {
+                    Message message = Message.obtain();
+                    message.what = GlobalContanstant.FAIL;
+                    handler.sendMessage(message);
+                }
+
+            }
+        }.start();
+    }
+
+    private String getUnitData() throws Exception {
+        SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.getUnitData);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
+        envelope.setOutputSoapObject(soapObject);
+        envelope.dotNet = true;
+        envelope.bodyOut = soapObject;
+
+        HttpTransportSE httpTransportSE = new HttpTransportSE(NetUrl.SERVERURL);
+
+        httpTransportSE.call(null, envelope);
+        SoapObject object = (SoapObject) envelope.bodyIn;
+        String result = object.getProperty(0).toString();
+        return result;
+    }
+
+
 }
 
 

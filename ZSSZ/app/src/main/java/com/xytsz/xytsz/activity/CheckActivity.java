@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.xytsz.xytsz.R;
 import com.xytsz.xytsz.adapter.CheckAdapter;
@@ -21,7 +23,6 @@ import com.xytsz.xytsz.util.SpUtils;
 import com.xytsz.xytsz.util.ToastUtil;
 
 
-
 import java.util.List;
 
 /**
@@ -31,74 +32,89 @@ import java.util.List;
 public class CheckActivity extends AppCompatActivity {
 
     private static final int ISCHECK = 6003;
+    private static final int FAIL = 500;
     private ListView mLv;
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case ISCHECK:
-                    ToastUtil.shortToast(getApplicationContext(), "没有已审核的数据，请稍后重试");
+                    mProgressBar.setVisibility(View.GONE);
+                    ToastUtil.shortToast(getApplicationContext(), "没有已报验的数据");
+                    break;
+                case FAIL:
+                    mProgressBar.setVisibility(View.GONE);
+                    ToastUtil.shortToast(getApplicationContext(), "获取数据异常,请稍后");
                     break;
             }
         }
     };
+    private ProgressBar mProgressBar;
+    private CheckAdapter adapter;
+    private int position;
+    private List<Review.ReviewRoad> list;
+    private int size;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check);
+        initAcitionbar();
         initView();
         initData();
     }
 
     private void initView() {
         mLv = (ListView) findViewById(R.id.lv_check);
+        mProgressBar = (ProgressBar) findViewById(R.id.review_progressbar);
     }
 
     private void initData() {
-
-
-        ToastUtil.shortToast(getApplicationContext(),"正在加载数据...");
+        mProgressBar.setVisibility(View.VISIBLE);
+        //ToastUtil.shortToast(getApplicationContext(),"正在加载数据...");
         new Thread() {
+
             @Override
             public void run() {
 
                 try {
-                    String checkData = SendActivity.getReviewData(GlobalContanstant.GETCHECK);
+                    //获取所有的病害信息  参数：0
+                    String checkData = SendActivity.getReviewData(GlobalContanstant.GETCHECK, 0);
                     if (checkData != null) {
 
                         Review review = JsonUtil.jsonToBean(checkData, Review.class);
-                        List<Review.ReviewRoad> list = review.getReviewRoadList();
-
-                        int checkSum = 0;
-                        for (Review.ReviewRoad reviewRoad : list){
-                            checkSum += reviewRoad.getList().size();
-                        }
-                        SpUtils.saveInt(getApplicationContext(),GlobalContanstant.CHECKSUM,checkSum);
+                        list = review.getReviewRoadList();
 
 
-                        final CheckAdapter adapter = new CheckAdapter(list);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (adapter != null) {
-                                    mLv.setAdapter(adapter);
+                        if (list.size() == 0) {
+                            Message message = Message.obtain();
+                            message.what = ISCHECK;
+                            handler.sendMessage(message);
+                        } else {
+
+                            adapter = new CheckAdapter(list);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (adapter != null) {
+                                        mLv.setAdapter(adapter);
+                                        mProgressBar.setVisibility(View.GONE);
+                                    }
                                 }
-                            }
-                        });
+                            });
 
 
-                    }else {
-                        Message message = Message.obtain();
-                        message.what = ISCHECK;
-                        handler.sendMessage(message);
-
+                        }
 
                     }
+
+
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Message message = Message.obtain();
+                    message.what = FAIL;
+                    handler.sendMessage(message);
                 }
             }
         }.start();
@@ -107,11 +123,64 @@ public class CheckActivity extends AppCompatActivity {
         mLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 Intent intent = new Intent(CheckActivity.this, CheckRoadActivity.class);
                 intent.putExtra("position", position);
-                startActivity(intent);
+                startActivityForResult(intent,700);
+
+
             }
         });
     }
+
+
+    private void initAcitionbar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setTitle(R.string.check);
+        }
+    }
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (resultCode) {
+            case GlobalContanstant.CHECKROADPASS:
+                int passposition = data.getIntExtra("passposition", -1);
+                position = data.getIntExtra("position", -1);
+                if (list != null) {
+                    list.get(position).getList().remove(passposition);
+                    size = list.get(position).getList().size();
+                    if (size == 0) {
+                        list.remove(position);
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+                break;
+
+            case GlobalContanstant.CHECKROADFAIL:
+                int failposition = data.getIntExtra("failposition", -1);
+                position = data.getIntExtra("position", -1);
+                if (list != null) {
+                    list.get(position).getList().remove(failposition);
+                    size = list.get(position).getList().size();
+                    if (size == 0) {
+                        list.remove(position);
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+                break;
+        }
+
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
 }

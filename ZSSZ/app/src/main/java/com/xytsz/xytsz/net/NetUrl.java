@@ -8,7 +8,10 @@ package com.xytsz.xytsz.net;
 public class NetUrl {
 
 
-    public static final String SERVERURL = "http://dx.xytgps.com:10010/SZWEBSERVICE/newxytszServices.asmx";
+    public static final String SERVERURL = "http://dxsz.xytgps.com/SZWEBSERVICE/newxytszServices.asmx";
+    //public static final String SERVERURL = "http://hr.xytgps.com:10001/SZWEBSERVICE/newxytszServices.asmx";
+    //public static final String SERVERURL = "http://sz.xytgps.com/SZWEBSERVICE/newxytszServices.asmx";
+    //public static final String SERVERURL = "http://mtg.xytgps.com:10004/SZWEBSERVICE/newxytszServices.asmx";
 
     /**
      *命名空间
@@ -37,6 +40,11 @@ public class NetUrl {
     /*
     * 去派工*/
     public static final String sendmethodName = "ToDispatching";
+    /**
+     * 养护驳回
+     */
+    public static final String sendbackmethodName = "Reject";
+
     /*
     * 审核*/
     public static final String reviewmethodName = "ToExamine";
@@ -60,14 +68,46 @@ public class NetUrl {
      */
     public static final String getTaskCountOfReport ="GetTaskCountOfReport";
     public static final String getTaskCountOfDeal ="GetTaskCountOfDeal";
+    public static final String getTaskCountOfReview ="GetTaskCountOfEx";
+    public static final String getTaskCountOfSend = "GetTaskCountOfIssued";
     /**
      * 获取所有病害列表 用于病害定位
      */
     public static final String getAllTaskMethodName = "GetAllTask";
     /**
-     * 获取所有的图片Url
+     * 获取所有病害的图片Url
      */
     public static final String getAllImageURLmethodName = "getAllImgUrl";
+    /**
+     * 获取报验阶段的三类图片
+     */
+    public static final String getPostImageURLmethodName = "getPostImgUrl";
+    public static final String getPreImageURLmethodName = "getPreImgUrl";
+    public static final String getRngImageURLmethodName = "getRngImgUrl";
+    /**
+     * 获取当前版本
+     */
+    public static final String getVersionInfoMethodName = "getVersionInfo";
+    /**
+     * 获取人员列表的方法
+     */
+    public static final String getPersonList ="getPersonList";
+    public static final String getallPersonList ="getPersonByYH";
+    /**
+     * 获取自己上报处置的方法
+     */
+    public static final String getALlReportByPersonID = "getALlReportByPersonID";
+    public static final String getALlDealByPersonID = "getAllDealByPersonID";
+    public static final String getALlSendByPersonID = "GetAllIssuedByPersonID";
+    public static final String getALlReviewByPersonID = "getAllExamineByPersonID";
+
+
+    /**
+     * 上传头像
+     */
+    public static final String uploadHeadImg = "uploadHeadImg ";
+
+
     /*
     * 方法*/
     public static final  String grade_SOAP_ACTION = "http://xytsz.org/getAllSZDisposalLeve";
@@ -86,7 +126,7 @@ public class NetUrl {
     public static final  String toDispatching_SOAP_ACTION = "http://xytsz.org/ToDispatching";
     public static final  String toManagement_SOAP_ACTION = "http://xytsz.org/ToManagement";
     public static final  String toInspection_SOAP_ACTION = "http://xytsz.org/ToInspection";
-    public static final  String getPersonlocation_SOAP_ACTION = "http://xytsz.org/getAllPersonLocation";
+    public static final  String getPersonlocation_SOAP_ACTION = "http://xytsz.org/getPersonLocationList";
     public static final  String toUploadlocation_SOAP_ACTION = "http://xytsz.org/toUploadLocation";
 
 
@@ -94,20 +134,47 @@ public class NetUrl {
 
     public static final String getTaskCountOfReport_SOAP_ACTION = "http://xytsz.org/GetTaskCountOfReport";
     public static final String getTaskCountOfDeal_SOAP_ACTION = "http://xytsz.org/GetTaskCountOfDeal";
+    public static final String getTaskCountOfSend_SOAP_ACTION = "http://xytsz.org/GetTaskCountOfSend";
+
 
     public static final String getAllImageURL_SOAP_ACTION = "http://xytsz.org/getAllImgUrl";
 
     public static final String getAllTask_SOAP_ACTION = "http://xytsz.org/GetAllTask";
-    public static final String getPostImageURLmethodName = "getPostImgUrl";
+
     public static final String getPostImageURL_SOAP_ACTION ="http://xytsz.org/getPostImgUrl" ;
-    public static final String getPreImageURLmethodName = "getPreImgUrl";
-    public static final String getRngImageURLmethodName = "getRngImgUrl";
+
     public static final String getPreImageURLSoap_Action = "http://xytsz.org/getPreImgUrl";
     public static final String getRngImageURLSoap_Action = "http://xytsz.org/getRngImgUrl";
-    public static final String getPersonList ="getPersonList";
+
 
     public static final String getPersonList_SOAP_ACTION ="http://xytsz.org/getPersonList";
-    public static final String getVersionInfoMethodName = "getVersionInfo";
+
     public static final String getVersionInfo_SOAP_ACTION = "http://xytsz.org/getVersionInfo";
     public static final String dealtype_SOAP_ACTION = "http://xytsz.org/getAllSZDealType";
+
+    public static final String getALlReportByPersonID_SOAP_ACTION = "http://xytsz.org/getALlReportByPersonID";
+    public static final String getALlDealByPersonID_SOAP_ACTION = "http://xytsz.org/getAllDealByPersonID";
+
+    public static final String uploadHeadImg_SOAP_ACTION = "http://xytsz.org/uploadHeadImg";
+    //
+    public static final String sendBack_SOAP_ACTION = "http://xytsz.org/Reject";
+
+
+    public static final String getTaskCountOfReview_SOAP_ACTION = "http://xytsz.org/GetTaskCountOfEx";
+    public static final String getALlReviewByPersonID_SOAP_ACTION = "http://xytsz.org/ getAllExamineByPersonID";
+
+
+    public static final String audiomethodName = "toReportAudio";
+
+    public static final String getAudioMethodName ="GetAudioByTNum";
+    public static final String getAudio_SOAP_ACTION ="http://xytsz.org/GetAudioByTNum";
+
+    public static final String getTaskStateMethodName ="GetTaskInfoByTNum";
+
+
+    public static final String replacePerson = "ToChangeRe_Person_ID";
+    public static final String modificaitonmethodName = "toChangePwd";
+    public static final String getpersonLocationList ="getPersonLocationList";
+    public static final String getpersontrack ="GetHistoryData";
+    public static final String getUnitData ="GetSZVectorEntityList";
 }

@@ -7,7 +7,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -83,6 +85,25 @@ public class ApkUtils {
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		return intent;
 	}
+
+	/**
+	 * 是否已经
+	 * 开启
+	 * @param className
+	 * @return
+	 */
+	public static boolean isServiceRunning(Context context,final String className) {
+		ActivityManager activityManager = (ActivityManager)context.
+				getSystemService(Context.ACTIVITY_SERVICE);
+		List<ActivityManager.RunningServiceInfo> info = activityManager.
+				getRunningServices(Integer.MAX_VALUE);
+		if (info == null || info.size() == 0) return true;
+		for (ActivityManager.RunningServiceInfo aInfo : info) {
+			if (className.equals(aInfo.service.getClassName())) return false;
+		}
+		return true;
+	}
+
 	
 
 }

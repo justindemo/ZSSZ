@@ -1,0 +1,83 @@
+import java.text.SimpleDateFormat
+
+apply plugin: 'com.android.application'
+
+repositories {
+    flatDir {
+        dir 'libs'
+    }
+}
+android {
+    signingConfigs {
+        release {
+            keyAlias 'last'
+            keyPassword 'xytsz123'
+            storeFile file('D:/project/xytsz.jks')
+            storePassword 'xytsz123'
+        }
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+    defaultConfig {
+        applicationId "com.xytsz.xytsz"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 17
+        versionName "掌上市政2.3.1"
+
+    }
+
+
+
+    sourceSets {
+        main() {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    buildTypes {
+        release {
+            //应用正式签名
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+
+            minifyEnabled false
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('release.apk')) {
+
+                output.outputFile = new File(outputFile.parent, defaultConfig.versionName + ".apk")
+            }
+        }
+    }
+
+
+}
+
+def buildTime() {
+    def df = new SimpleDateFormat("yyyyMMdd")
+    df.setTimeZone(TimeZone.getDefault())
+    return df.format(new Date())
+}
+
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile files('libs/ksoap2-android-assembly-3.6.1-jar-with-dependencies.jar')
+    compile 'com.commit451:PhotoView:1.2.4'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.android.support:support-v4:23.1.0'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile files('libs/butterknife-7.0.1.jar')
+    compile 'com.jiechic.library:xUtils:2.6.14'
+    compile files('libs/BaiduLBS_Android.jar')
+}

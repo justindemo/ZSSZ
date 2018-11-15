@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xytsz.xytsz">
 
+
     <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
     <!-- 这个权限用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -39,9 +40,10 @@
     <uses-permission android:name="android.permission.ACCES_MOCK_LOCATION" />
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-
     <uses-permission android:name="android.permission.ACCESS_GPS" />
+
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+
 
     <application
         android:name=".MyApplication"
@@ -75,16 +77,21 @@
         <activity android:name=".activity.MainActivity" />
         <activity
             android:name=".activity.HomeActivity"
-            android:theme="@style/AppTheme" />
-        <activity android:name=".activity.DetailActivity" />
-        <activity android:name=".activity.ReportActivity" />
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" >
+
+            </activity>
+        <activity android:name=".activity.ReportActivity"
+            android:screenOrientation="portrait"/>
         <activity android:name=".activity.RoadActivity" />
         <activity android:name=".activity.ReviewActivity" />
         <activity android:name=".activity.MemberLocationActivity" />
         <activity android:name=".activity.MakerActivty" />
         <activity android:name=".activity.DealActivity" />
         <activity android:name=".activity.SendActivity" />
-        <activity android:name=".activity.UnCheckActivity" />
+        <activity android:name=".activity.UnCheckActivity"
+            android:screenOrientation="portrait"/>
         <activity android:name=".activity.CheckActivity" />
         <activity android:name=".activity.CheckRoadActivity" />
         <activity android:name=".activity.PostActivity" />
@@ -92,18 +99,32 @@
         <activity android:name=".activity.SendRoadActivity" />
         <activity android:name=".activity.LibActivity" />
         <activity android:name=".activity.FloodActivity" />
-        <activity android:name=".activity.ProblemActivity" />
-        <activity android:name=".activity.MakerProblemActivty" />
+        <activity android:name=".activity.MakerProblemActivty"
+            android:screenOrientation="portrait" />
         <activity android:name=".activity.DiseaseDetailActivity" />
         <activity
             android:name=".activity.PhotoShowActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".activity.CheckDetailActivity" />
         <activity android:name=".activity.PositionActivity" />
-        <activity android:name=".activity.FristDieaseActivity" />
-        <activity android:name=".activity.SecondDieaseActivity" />
-        <activity android:name=".activity.ThridDieaseActivity" />
-        <activity android:name=".activity.PurchaseActivity" />
+        <activity android:name=".activity.MyReporteActivity" />
+        <activity android:name=".activity.MyDealedActivity" />
+        <activity android:name=".activity.MyReporteDetailActivity" />
+        <activity android:name=".activity.MyDealedDetailActivity" />
+        <activity android:name=".activity.MyReviewedActivity" />
+        <activity android:name=".activity.SendRoadDetailActivity" />
+        <activity android:name=".activity.MyInformationActivity" />
+        <activity android:name=".activity.ForUsActivity" />
+        <activity android:name=".activity.MySendActivity" />
+        <activity android:name=".activity.MySendDetailActivity" />
+        <activity android:name=".activity.MarkPositionActivity" />
+        <activity android:name=".activity.ModificationActivity" />
+        <activity android:name=".activity.PersonLocationActivity" />
+        <activity android:name=".activity.PersonTrackActivty" />
+        <activity android:name=".activity.PersonLocationInfoActivity" />
+        <activity android:name=".activity.SearchRoadActivity" />
+
+
         <activity
             android:name=".activity.GuideActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
@@ -122,8 +143,7 @@
             android:name=".activity.CheckReportBigPhotoActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".activity.ProcessDetailActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:name=".activity.ProcessDetailActivity" />
         <activity
             android:name=".activity.MarkerReportPhotoActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
@@ -138,13 +158,20 @@
             android:name=".activity.IngPhotoActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
+        <activity android:name=".activity.LiveActivity"
+            android:launchMode="singleInstance"
+            android:theme="@style/LiveStyle"/>
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
             android:process=":remote" />
 
-        <service android:name=".service.LocationService" />
-
+        <service android:name=".service.LocationService"
+            android:enabled="true"
+            android:process=":remote"/>
+        <service android:name=".service.LocationBinderService"
+            android:enabled="true"
+            android:process="com.xytsz.xytsz.binder"/>
 
     </application>
 

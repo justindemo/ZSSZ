@@ -1,0 +1,147 @@
+<resources>
+    <string name="app_name">掌上市政</string>
+    <string name="logo_userName">账户 :</string>
+    <string name="login">登录</string>
+    <string name="register">注册</string>
+    <string name="logo_passWordName">密码 :</string>
+    <string name="logo_save">记住用户名密码</string>
+
+    <string name="report_dealgrade">处置等级：</string>
+    <string name="report_dealcategory">处置类别：</string>
+    <string name="report_department">受理部门：</string>
+    <string name="report_facategory">设施类别：</string>
+    <string name="report_faname">设施名称：</string>
+    <string name="report_pbtype">病害类型：</string>
+    <string name="report_facility">设施材料：</string>
+    <string name="report_fasize">材料规格：</string>
+    <string name="report_roadname">道路名称：</string>
+    <string name="home_notnetwork">网络异常</string>
+    <string name="home_refresh">刷新</string>
+
+    <string name="permission_get_accounts_hint">没有此权限，无法开启这个功能，请开启权限。PERMISSION_GET_ACCOUNTS</string>
+    <string name="permission_read_phone_hint">读取手机权限</string>
+    <string name="permission_call_phone_hint">请打开电话权限</string>
+    <string name="permission_camera_hint">请打开拍照权限</string>
+    <string name="permission_access_fine_location_hint">请打开位置信息，提供定位信息</string>
+    <string name="permission_access_coarse_location_hint">请打开位置信息，提供定位信息</string>
+    <string name="permission_read_external_hint">请允许读取SD卡</string>
+    <string name="permission_white_external_hint">请允许读写SD卡</string>
+    <string name="permission_recode_audio_hint">请打开录音权限</string>
+
+    <string name="allreporter">上报人员：</string>
+    <string name="problemlocation">病害位置：</string>
+    <string name="personlocation">人员定位</string>
+    <string name="persontrack">轨迹回放</string>
+    <string name="reportertime">上报时间：</string>
+    <string name="review_tv_detail">详细</string>
+    <string name="review_tv_pass">通过</string>
+    <string name="review_tv_fail">驳回</string>
+    <string name="review_tv_nodata">未上报数据</string>
+
+    <string name="report_image">病害图片：</string>
+    <string name="report_locaiton">地理位置描述：</string>
+    <string name="report_problemdes">病害描述：</string>
+    <string name="report_commit">提交</string>
+    <string name="report_dialog_title">请选择</string>
+    <string name="report_dialog_content1">拍照</string>
+    <string name="report_upimg">正在上传图片···</string>
+    <string name="report_uploading">开始上传</string>
+    <string name="report_imgsuccess">上传图片成功</string>
+    <string name="report_dialog_content2">相册</string>
+    <string name="report_request">至少选择一张上报图片</string>
+    <string name="report_notifica">上报一条新病害</string>
+    <string name="report_notifica_title">：新上报一条病害</string>
+    <string name="report_error">数据未获取，稍后重试</string>
+    <string name="report_delete_title">删除录音</string>
+    <string name="report_delete_content">确定删除录音?</string>
+    <string name="report_delete_ok">确定</string>
+    <string name="report_delete_cancle">取消</string>
+    <string name="report_record_little">录音时间太短</string>
+    <string name="report_record_max">录音不能超过60s</string>
+    <string name="audio_success">音频上传成功</string>
+    <string name="audio_fail">音频上传失败</string>
+    <string name="disrecord">请先录音</string>
+    <string name="reportmore">请删除重录</string>
+    <string name="reportlocation">请填写位置描述</string>
+    <string name="report_tv_press_audio">按住说话</string>
+    <string name="report_tv_record">重录</string>
+
+    <string name="check_detail_title">养护作业</string>
+    <string name="check_detail_reviewer">审核人员：</string>
+    <string name="check_detail_dealer">处置人员：</string>
+    <string name="check_detail_reporttime">上报时间：</string>
+    <string name="check_detail_reviewtime">审核时间：</string>
+    <string name="check_detail_repair">维修备注：</string>
+    <string name="check_detail_location">详细位置：</string>
+    <string name="check_detail_requesttime">要求完成时间：</string>
+    <string name="check_detail_resultetime">实际完成时间：</string>
+    <string name="check_detail_ideal">处置前</string>
+    <string name="check_detail_deali">处置后</string>
+
+
+    <string name="reprote">上报</string>
+    <string name="review">审核</string>
+    <string name="send">下派</string>
+    <string name="deal">处置</string>
+    <string name="post">报验</string>
+    <string name="check">验收</string>
+    <string name="problem_detail">病害明细</string>
+
+    <string name="mine_information">我的资料</string>
+    <string name="mine_score">我的积分</string>
+    <string name="for_us">关于我们</string>
+    <string name="mine_update">软件更新</string>
+    <string name="mine_share">软件分享</string>
+    <string name="mine_appraise">软件评价</string>
+    <string name="information_name">姓名：</string>
+    <string name="hint_name">请输入姓名</string>
+    <string name="information_phone">手机号码：</string>
+    <string name="information_department">所属部门：</string>
+    <string name="information_modification">修改密码</string>
+    <string name="modificationtip">密码组成：6~16个字符,数字、字母</string>
+    <string name="modificationtitle">请设置密码并妥善保存</string>
+
+
+
+    <string name="mine_exit">退出登录</string>
+    <string name="companyname">北京向阳天科技有限公司</string>
+    <string name="connacteus">全国财富招商热线：400-865-2007</string>
+    <string name="myreviewed">我的审核</string>
+    <string name="myreviewed_nodata">您未审核过</string>
+
+    <string name="mydealed">我的处置</string>
+    <string name="mydealed_nodata">您未处置过</string>
+    <string name="myreported_nodata">您未上报过</string>
+    <string name="myreported">我的上报</string>
+
+    <string name="processdetail">病害流程</string>
+    <string name="process_tasknumer">任务单号：</string>
+    <string name="process_report">上报人：</string>
+    <string name="process_review">审核人：</string>
+    <string name="process_deal">处置人：</string>
+    <string name="process_check">验收人：</string>
+    <string name="process_redeal">处置前照片</string>
+    <string name="process_dealing">处置中照片</string>
+    <string name="process_dealed">处置后照片</string>
+
+    <string name="uncheck_redeal">处置前：</string>
+    <string name="uncheck_deal">处置中：</string>
+    <string name="uncheck_dealed">处置后：</string>
+
+    <string name="for_us_content">&#160;&#160;&#160;&#160;&#160;&#160;北京向阳天科技有限公司,专注于智慧城市技术的研究和开发,以“掌上市政”为核心产品,形成了针对城市管养及运维领域,对于不同规模、不同应用的管养及运维工作提出针对性解决方案,是国内最有影响力的市政设施管养系统提供商。\n
+  &#160;&#160;&#160;&#160;&#160;&#160;“掌上市政”已经成为市政设施管理行业中较知名和最有影响力的品牌.荣获2017年工业和信息化部“创客中国”互联网+创新创业大赛“优胜奖”称号,并多次荣获国家级、省、市优秀软件称号,用户遍及中国多个省市,有多家市政设施管理企业及会员加盟案例。
+</string>
+
+    <string-array name="permissions">
+        <item>@string/permission_recode_audio_hint</item>
+        <item>@string/permission_get_accounts_hint</item>
+        <item>@string/permission_read_phone_hint</item>
+        <item>@string/permission_call_phone_hint</item>
+        <item>@string/permission_camera_hint</item>
+        <item>@string/permission_access_fine_location_hint</item>
+        <item>@string/permission_access_coarse_location_hint</item>
+        <item>@string/permission_read_external_hint</item>
+        <item>@string/permission_white_external_hint</item>
+    </string-array>
+
+</resources>

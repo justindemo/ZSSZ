@@ -1,7 +1,9 @@
 package com.xytsz.xytsz.ui;
 
+
 import android.content.Context;
 import android.support.v4.widget.ViewDragHelper;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -9,12 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.xytsz.xytsz.activity.DiseaseDetailActivity;
-import com.xytsz.xytsz.util.IntentUtil;
+
 
 
 /**
  * Created by admin on 2017/1/11.
+ *
+ * 自定义滑动
  */
 public class Swipelayout extends FrameLayout {
 
@@ -24,7 +27,6 @@ public class Swipelayout extends FrameLayout {
     private int leftViewHeight;
     private int rightViewWidth;
     private ViewDragHelper helper;
-
 
 
     public Swipelayout(Context context) {
@@ -91,7 +93,7 @@ public class Swipelayout extends FrameLayout {
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
             super.onViewReleased(releasedChild, xvel, yvel);
-            if (leftView.getLeft() > -rightViewWidth * 0.5f) {
+            if (leftView.getLeft() > -rightViewWidth * 0.1f) {
                 close(true);
             } else {
                 open();
@@ -112,20 +114,22 @@ public class Swipelayout extends FrameLayout {
             //设置了滚动的目标点,开始执行
             if (helper.smoothSlideViewTo(leftView, 0, 0)) {
                 invalidate();
-                Log.i("test", "smoothSlideViewTo");
             }
         }else{
             //将条目瞬间关闭
-            leftView.layout(0, 0, leftViewWidth, leftViewHeight);
-            rightView.layout(leftViewWidth, 0, leftViewWidth + rightViewWidth, leftViewWidth);
-            SwipeLayoutManager.getInstance().clearSwipeLayout();
+                leftView.layout(0, 0, leftViewWidth, leftViewHeight);
+                rightView.layout(leftViewWidth, 0, leftViewWidth + rightViewWidth, leftViewWidth);
+                SwipeLayoutManager.getInstance().clearSwipeLayout();
+
+
         }
     }
 
         @Override
         public void computeScroll() {
             super.computeScroll();
-            Log.i("test", "computeScroll");
+
+
             if (helper.continueSettling(true)) {
                 invalidate();
             } else {

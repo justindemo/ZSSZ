@@ -2,10 +2,12 @@ package com.xytsz.xytsz.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +17,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.baidu.mapapi.SDKInitializer;
 import com.xytsz.xytsz.R;
 import com.xytsz.xytsz.global.GlobalContanstant;
 import com.xytsz.xytsz.util.DensityUtil;
+import com.xytsz.xytsz.util.PermissionUtils;
 import com.xytsz.xytsz.util.SpUtils;
 
 import java.util.ArrayList;
@@ -66,17 +70,25 @@ public class GuideActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
-
                 //保存不是第一次进入的状态
                 SpUtils.saveBoolean(GuideActivity.this, GlobalContanstant.ISFIRSTENTER, false);
                 //跳转到首页,并且将当前页面移出
-                startActivity(new Intent(GuideActivity.this,HomeActivity.class));
+                String loginId = SpUtils.getString(getApplicationContext(), GlobalContanstant.LOGINID);
+
+                if (loginId == null || TextUtils.isEmpty(loginId)) {
+                    Intent intent = new Intent(GuideActivity.this, MainActivity.class);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }else {
+
+                    startActivity(new Intent(GuideActivity.this, HomeActivity.class));
+                }
                 //移除当前页面
                 finish();
             }
         });
     }
+
 
     /** viewpager的界面切换监听 **/
     private ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {

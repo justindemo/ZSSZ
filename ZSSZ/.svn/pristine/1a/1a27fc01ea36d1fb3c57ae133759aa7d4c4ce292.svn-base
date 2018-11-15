@@ -1,0 +1,465 @@
+package com.xytsz.xytsz.activity;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.utils.CoordinateConverter;
+import com.google.gson.reflect.TypeToken;
+import com.xytsz.xytsz.R;
+import com.xytsz.xytsz.bean.PersonTrack;
+import com.xytsz.xytsz.global.GlobalContanstant;
+import com.xytsz.xytsz.net.NetUrl;
+import com.xytsz.xytsz.util.JsonUtil;
+import com.xytsz.xytsz.util.ToastUtil;
+
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
+/**
+ * Created by admin on 2018/5/2.
+ * <p>
+ * 人员轨迹回放
+ */
+public class PersonTrackActivty extends AppCompatActivity {
+
+    @Bind(R.id.track_mapview)
+    MapView trackMapview;
+    @Bind(R.id.iv_play)
+    ImageView ivPlay;
+    @Bind(R.id.tv_start)
+    TextView tvStart;
+    @Bind(R.id.tv_start_time)
+    TextView tvStartTime;
+    @Bind(R.id.tv_end)
+    TextView tvEnd;
+    @Bind(R.id.tv_end_time)
+    TextView tvEndTime;
+    @Bind(R.id.audio_sk_position)
+    SeekBar audioSkPosition;
+    @Bind(R.id.track_progress)
+    ProgressBar trackProgress;
+    private int personId;
+    private String personName;
+    private String time;
+    private String[] endTime;
+    private static final int UpdatePosition = 0;
+    private Handler handler = new Handler() {
+
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case GlobalContanstant.FAIL:
+                    trackProgress.setVisibility(View.GONE);
+                    ToastUtil.shortToast(getApplicationContext(), "数据未获取");
+                    break;
+                case GlobalContanstant.MYSENDSUCCESS:
+                    trackProgress.setVisibility(View.GONE);
+                    String json = (String) msg.obj;
+                    List<PersonTrack> personTracks = JsonUtil.jsonToBean(json, new TypeToken<List<PersonTrack>>() {
+                    }.getType());
+                    if (personTracks.size() != 0) {
+
+                        init(personTracks);
+                    } else {
+                        ToastUtil.shortToast(getApplicationContext(), "数据为空");
+                    }
+
+                    break;
+
+
+                case UpdatePosition:
+                    int point = (int) msg.obj;
+                    audioSkPosition.setMax(points.size());
+                    audioSkPosition.setProgress(point);
+                    time = times.get(point);
+                    endTime = time.split(" ");
+                    tvEnd.setText(endTime[1].substring(0, 5));
+                    break;
+                case 1:
+                    flag = true;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            start();
+                        }
+                    }).start();
+                    break;
+                case 2:
+                    int point1 = (int) msg.obj;
+                    audioSkPosition.setMax(points.size());
+                    audioSkPosition.setProgress(point1);
+                    time = times.get(point1);
+                    endTime = time.split(" ");
+                    tvEnd.setText(endTime[1].substring(0, 5));
+                    flag = false;
+                    break;
+                case 3:
+                    points2.clear();
+                    flag = false;
+                    ivPlay.setImageResource(R.mipmap.btn_play);
+                    btn_road = false;
+                    audioSkPosition.setProgress(0);
+                    setTime();
+                    break;
+            }
+        }
+    };
+    private LatLng start;
+    private LatLng latLng;
+    private List<LatLng> points = new ArrayList<>();
+    private boolean btn_road = false;
+    private Marker mMarker;
+    private BitmapDescriptor icon;
+
+    private List<String> times = new ArrayList<>();
+
+    private void init(List<PersonTrack> personTracks) {
+        start = new LatLng(personTracks.get(0).getLatitude(), personTracks.get(0).getLongitude());
+
+        for (int i = 0; i < personTracks.size(); i++) {
+            latLng = new LatLng(personTracks.get(i).getLatitude(), personTracks.get(i).getLongitude());
+            if (personTracks.get(0).getLatitude() == personTracks.get(i).getLatitude()
+                    && personTracks.get(0).getLongitude() == personTracks.get(i).getLongitude()) {
+            } else {
+                points.add(latLng);
+                times.add(personTracks.get(i).getTime());
+
+            }
+        }
+
+
+        initOverLay(start);
+    }
+
+    private void initOverLay(LatLng start) {
+        if (points.size() == 0) {
+
+            baiduMap.clear();
+            ToastUtil.shortToast(getApplicationContext(), "人员未走");
+            baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(start));
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.hong1);
+
+            OverlayOptions ooA = new MarkerOptions().position(start)
+                    .icon(icon).draggable(true);
+            mMarker = (Marker) (baiduMap.addOverlay(ooA));
+            ivPlay.setEnabled(false);
+            ivPlay.setFocusable(false);
+
+        } else {
+
+            initOverLay();
+        }
+    }
+
+    private void initOverLay() {
+
+        baiduMap.clear();
+        //hua的折线
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.width(5).color(Color.BLUE).points(points);
+        baiduMap.addOverlay(polylineOptions);
+
+        baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(points.get(0)));
+
+        icon = BitmapDescriptorFactory.fromResource(R.mipmap.hong1);
+
+        OverlayOptions ooA = new MarkerOptions().position(points.get(index))
+                .icon(icon).draggable(true);
+        mMarker = (Marker) (baiduMap.addOverlay(ooA));
+
+
+    }
+
+
+    boolean flag;
+    private int index;
+    List<LatLng> points2 = new ArrayList<LatLng>();
+
+    public void start() {
+        if (flag) {
+            if (mMarker != null) {
+                mMarker.remove();
+            }
+            /**
+             * 计算角度
+             */
+            Bitmap bitmapOrg = BitmapFactory.decodeResource(getResources(),
+                    R.mipmap.hong1);
+            Matrix matrix = new Matrix();
+            double x1 = points.get(index).latitude, x2 = points
+                    .get(index + 1 == points.size() ? index - 2 : index + 1).latitude; // 点1坐标;
+            double y1 = points.get(index).longitude, y2 = points
+                    .get(index + 1 == points.size() ? index - 2 : index + 1).longitude;// 点2坐标
+            double x = Math.abs(x1 - x2);
+            double y = Math.abs(y1 - y2);
+            double z = Math.sqrt(x * x + y * y);
+            int jiaodu = Math.round((float) (Math.asin(y / z) / Math.PI * 180));// 最终角度
+            x = y1 - y2;
+            y = x1 - x2;
+
+            if (x > 0 && y < 0) {// 在第二象限
+                jiaodu = 0 - jiaodu;
+            }
+            if (x > 0 && y > 0) {// 在第三象限
+                jiaodu = jiaodu;
+            }
+            if (x < 0 && y > 0) {// 在第四象限
+                jiaodu = 180 - jiaodu;
+            }
+
+            /**
+             * 旋转图标
+             */
+            matrix.postRotate(jiaodu);
+            Bitmap resizedBitmap = Bitmap.createBitmap(bitmapOrg, 0, 0,
+                    bitmapOrg.getWidth(), bitmapOrg.getHeight(), matrix, true);
+            icon = BitmapDescriptorFactory.fromBitmap(resizedBitmap);
+            /**
+             * 旋转图标
+             */
+
+            OverlayOptions ooA = new MarkerOptions()
+                    .position(points.get(index)).icon(icon).draggable(true);
+            mMarker = (Marker) (baiduMap.addOverlay(ooA));
+            if (points2.size() <= 1) {
+                points2.add(points.get(index));
+                points2.add(points.get(index + 1));
+            } else {
+                points2.add(points.get(index));
+            }
+
+            MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(points
+                    .get(index));
+            baiduMap.setMapStatus(u);
+
+            OverlayOptions s = new PolylineOptions().width(7)
+                    .color(Color.GREEN).points(points2);
+            baiduMap.addOverlay(s);
+
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            index++;
+            if (index != points.size()) {
+                //更新seekbar的进度
+                Message message = new Message();
+                message.what = UpdatePosition;
+                message.obj = index;
+                handler.sendMessage(message);
+                //没到终点的时候，重新绘制
+                start();
+            } else {
+                //终点
+                Message message = new Message();
+                message.what = 3;
+                handler.sendMessage(message);
+            }
+        }
+    }
+
+    //重置res
+    public void resetOverlay() {
+
+        if (btn_road) {
+            if (index == points.size()) {
+                baiduMap.clear();
+                index = 0;
+                initOverLay();// 初始化
+                audioSkPosition.setProgress(points.size());
+            }
+            //播放
+            Message message = new Message();
+            message.what = 1;
+            handler.sendMessage(message);
+        } else {
+            //暂停
+            Message message = new Message();
+            message.obj = index;
+            message.what = 2;
+            handler.sendMessage(message);
+        }
+    }
+
+
+    private BaiduMap baiduMap;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_persontrack);
+        ButterKnife.bind(this);
+
+        if (getIntent() != null) {
+            personId = getIntent().getIntExtra("personId", -1);
+            personName = getIntent().getStringExtra("personName");
+
+        }
+
+        initActionBar();
+        initView();
+        initData();
+    }
+
+    private void initView() {
+        trackMapview.showScaleControl(false);
+        trackMapview.showZoomControls(true);
+
+        baiduMap = trackMapview.getMap();
+
+        baiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
+
+        setTime();
+    }
+
+    private void setTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm", Locale.CHINA);
+        Date date = new Date(System.currentTimeMillis());
+        String time = simpleDateFormat.format(date);
+        String[] day = time.split(" ");
+        tvStartTime.setText(day[0]);
+        tvEnd.setText(day[1]);
+        tvEndTime.setText(day[0]);
+    }
+
+    private void initData() {
+        trackProgress.setVisibility(View.VISIBLE);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.CHINA);
+        String title = simpleDateFormat.format(new Date());
+        final String beginTime = title + "-" + tvStartTime.getText() + " 00:00:00";
+        final String endTime = title + "-" + tvEndTime.getText() + " " + tvEnd.getText() + ":00";
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    String data = getData(personId, beginTime, endTime);
+                    if (data != null) {
+                        Message message = Message.obtain();
+                        message.what = GlobalContanstant.MYSENDSUCCESS;
+                        message.obj = data;
+                        handler.sendMessage(message);
+                    }
+                } catch (Exception e) {
+                    Message message = Message.obtain();
+                    message.what = GlobalContanstant.FAIL;
+                    handler.sendMessage(message);
+                }
+            }
+        }.start();
+    }
+
+    private String getData(int personId, String beginTime, String endTime) throws Exception {
+
+        SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.getpersontrack);
+
+        soapObject.addProperty("PersonId", personId);
+        soapObject.addProperty("BeginTime", beginTime);
+        soapObject.addProperty("EndTime", endTime);
+
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
+        envelope.dotNet = true;
+        envelope.bodyOut = soapObject;
+
+        HttpTransportSE httpTransportSE = new HttpTransportSE(NetUrl.SERVERURL);
+        httpTransportSE.call(NetUrl.getPersonlocation_SOAP_ACTION, envelope);
+
+        SoapObject object = (SoapObject) envelope.bodyIn;
+        String result = object.getProperty(0).toString();
+        return result;
+    }
+
+    private void initActionBar() {
+        ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayHomeAsUpEnabled(true);
+            supportActionBar.setHomeButtonEnabled(true);
+            supportActionBar.setTitle(personName);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
+    @OnClick(R.id.iv_play)
+    public void onViewClicked() {
+
+        if (btn_road) {
+            ivPlay.setImageResource(R.mipmap.btn_play);
+            btn_road = false;
+            //暂停
+            resetOverlay();
+            if (index == 0) {
+                audioSkPosition.setProgress(0);
+                audioSkPosition.setMax(points.size());
+            }
+        } else {
+            ivPlay.setImageResource(R.mipmap.btn_pause);
+            btn_road = true;
+            resetOverlay();
+
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        trackMapview.onResume();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        trackMapview.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        trackMapview.onDestroy();
+        super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
+    }
+
+}

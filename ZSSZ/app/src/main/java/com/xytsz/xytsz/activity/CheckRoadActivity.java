@@ -5,17 +5,20 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.xytsz.xytsz.MyApplication;
 import com.xytsz.xytsz.R;
 import com.xytsz.xytsz.adapter.CheckRoadAdapter;
+import com.xytsz.xytsz.bean.AudioUrl;
 import com.xytsz.xytsz.bean.ImageUrl;
 import com.xytsz.xytsz.bean.Review;
 import com.xytsz.xytsz.global.GlobalContanstant;
@@ -42,30 +45,38 @@ import java.util.List;
 public class CheckRoadActivity extends AppCompatActivity {
 
     private static final int ROADDATA = 50001;
+    private static final int NOONE = 500;
     private ListView mlv;
     private int position;
     private Review.ReviewRoad reviewRoad;
 
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
 
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
+                case GlobalContanstant.CHECKROADFAIL:
+                    ToastUtil.shortToast(getApplicationContext(), "获取数据异常,请稍后");
+                    mProgressBar.setVisibility(View.GONE);
+                    break;
+                case NOONE:
+                    ToastUtil.shortToast(getApplicationContext(), "已验收完毕");
+                    mProgressBar.setVisibility(View.GONE);
+                    break;
                 case ROADDATA:
                     reviewRoad = (Review.ReviewRoad) msg.obj;
-
-
                     mlv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             Intent intent = new Intent(parent.getContext(), CheckDetailActivity.class);
                             intent.putExtra("position", position);
                             intent.putExtra("reviewRoad", reviewRoad);
-                            intent.putExtra("imageUrlReport",(Serializable) imageUrlLists);
-                            intent.putExtra("imageUrlPost",(Serializable) imageUrlPostLists);
-                            startActivityForResult(intent,40001);
+                            intent.putExtra("audioUrls", (Serializable) audioUrls);
+                            intent.putExtra("imageUrlReport", (Serializable) imageUrlLists);
+                            intent.putExtra("imageUrlPost", (Serializable) imageUrlPostLists);
+                            startActivityForResult(intent, 40001);
 
                         }
                     });
@@ -76,19 +87,21 @@ public class CheckRoadActivity extends AppCompatActivity {
     private CheckRoadAdapter adapter;
     private List<List<ImageUrl>> imageUrlPostLists = new ArrayList<>();
     private List<List<ImageUrl>> imageUrlLists = new ArrayList<>();
-
-
+    private ProgressBar mProgressBar;
+    private List<AudioUrl> audioUrls = new ArrayList<>();
+    private List<Review.ReviewRoad.ReviewRoadDetail> list;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getIntent() != null) {
-            position = getIntent().getIntExtra("position", 0);
+            position = getIntent().getIntExtra("position", -1);
         }
 
         setContentView(R.layout.activity_checkroad);
+        initAcitionbar();
         mlv = (ListView) findViewById(R.id.lv_checkroad);
-
+        mProgressBar = (ProgressBar) findViewById(R.id.review_progressbar);
 
         initData();
 
@@ -97,8 +110,7 @@ public class CheckRoadActivity extends AppCompatActivity {
 
     private void initData() {
 
-
-        ToastUtil.shortToast(getApplicationContext(), "正在加载数据..");
+        mProgressBar.setVisibility(View.VISIBLE);
 
         new Thread() {
             @Override
@@ -106,59 +118,76 @@ public class CheckRoadActivity extends AppCompatActivity {
 
                 try {
 
-                    String checkData = ReviewActivity.getServiceData(GlobalContanstant.GETCHECK);
+                    String checkData = ReviewActivity.getServiceData(GlobalContanstant.GETCHECK, 0);
 
                     if (checkData != null) {
                         Review review = JsonUtil.jsonToBean(checkData, Review.class);
-                        final Review.ReviewRoad reviewRoad =  review.getReviewRoadList().get(position);
-                        List<Review.ReviewRoad.ReviewRoadDetail> list = reviewRoad.getList();
-                        //遍历list
-                        for (Review.ReviewRoad.ReviewRoadDetail detail :list){
-                            String taskNumber = detail.getTaskNumber();
-                            /**
-                             * 获取到图片的URl
-                             */
+                        final Review.ReviewRoad reviewRoad = review.getReviewRoadList().get(position);
+                        list = reviewRoad.getList();
 
-                            String json = MyApplication.getAllImagUrl(taskNumber, GlobalContanstant.GETREVIEW);
-                            String postJson =getPostImagUrl(taskNumber);
+                        audioUrls.clear();
 
-                            if (json != null) {
-                                //String list = new JSONObject(json).getJSONArray("").toString();
-                                List<ImageUrl> imageUrlList = new Gson().fromJson(json, new TypeToken<List<ImageUrl>>() {
-                                }.getType());
+                        if (list.size() == 0) {
+                            Message message = Message.obtain();
+                            message.what = NOONE;
+                            handler.sendMessage(message);
+                        } else {
 
-                                imageUrlLists.add(imageUrlList);
-                            }
+                            //遍历list
+                            for (Review.ReviewRoad.ReviewRoadDetail detail : list) {
+                                String taskNumber = detail.getTaskNumber();
+                                /**
+                                 * 获取到图片的URl
+                                 */
 
+                                String json = MyApplication.getAllImagUrl(taskNumber, GlobalContanstant.GETREVIEW);
+                                String postJson = getPostImagUrl(taskNumber);
 
+                                if (json != null) {
+                                    //String list = new JSONObject(json).getJSONArray("").toString();
+                                    List<ImageUrl> imageUrlList = new Gson().fromJson(json, new TypeToken<List<ImageUrl>>() {
+                                    }.getType());
 
-                            if (postJson != null) {
-                                List<ImageUrl> imageUrlPostList = new Gson().fromJson(postJson, new TypeToken<List<ImageUrl>>() {
-                                }.getType());
-
-                                imageUrlPostLists.add(imageUrlPostList);
-                            }
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                adapter = new CheckRoadAdapter(reviewRoad,imageUrlLists,imageUrlPostLists);
-                                if (adapter != null) {
-
-                                    mlv.setAdapter(adapter);
+                                    imageUrlLists.add(imageUrlList);
                                 }
+
+
+                                if (postJson != null) {
+                                    List<ImageUrl> imageUrlPostList = new Gson().fromJson(postJson, new TypeToken<List<ImageUrl>>() {
+                                    }.getType());
+
+                                    imageUrlPostLists.add(imageUrlPostList);
+                                }
+
+                                String audioUrljson = RoadActivity.getAudio(taskNumber);
+                                if (audioUrljson != null) {
+                                    AudioUrl audioUrl = JsonUtil.jsonToBean(audioUrljson, AudioUrl.class);
+                                    audioUrls.add(audioUrl);
+                                }
+
                             }
-                        });
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter = new CheckRoadAdapter(reviewRoad, imageUrlLists, imageUrlPostLists);
+                                    mlv.setAdapter(adapter);
+                                    mProgressBar.setVisibility(View.GONE);
+
+                                }
+                            });
 
 
-                        Message message = Message.obtain();
-                        message.obj = reviewRoad;
-                        message.what = ROADDATA;
-                        handler.sendMessage(message);
+                            Message message = Message.obtain();
+                            message.obj = reviewRoad;
+                            message.what = ROADDATA;
+                            handler.sendMessage(message);
 
+                        }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Message message = Message.obtain();
+                    message.what = GlobalContanstant.CHECKROADFAIL;
+                    handler.sendMessage(message);
                 }
             }
         }.start();
@@ -166,11 +195,10 @@ public class CheckRoadActivity extends AppCompatActivity {
 
     }
 
-    public  String getPostImagUrl(String taskNumber) throws Exception {
+    public String getPostImagUrl(String taskNumber) throws Exception {
 
         SoapObject soapObject = new SoapObject(NetUrl.nameSpace, NetUrl.getPostImageURLmethodName);
         soapObject.addProperty("TaskNumber", taskNumber);
-
 
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER12);
@@ -182,39 +210,63 @@ public class CheckRoadActivity extends AppCompatActivity {
 
         httpTransportSE.call(NetUrl.getPostImageURL_SOAP_ACTION, envelope);
         SoapObject object = (SoapObject) envelope.bodyIn;
-        String result =  object.getProperty(0).toString();
+        String result = object.getProperty(0).toString();
         return result;
     }
 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == 110){
-            boolean isPass = data.getBooleanExtra("IsPass", false);
-            boolean isShow = data.getBooleanExtra("isShow", false);
-            int position = data.getIntExtra("position", 0);
-            if (reviewRoad != null){
-                reviewRoad.getList().get(position).setCheck(isPass);
-                reviewRoad.getList().get(position).setShow(isShow);
-            }
-            if (adapter!= null){
-                adapter.updateAdapter(reviewRoad.getList());
-            }
+        if (resultCode == 200) {
+            int passposition = data.getIntExtra("passposition", -1);
+            if (list != null) {
+                list.remove(passposition);
+                audioUrls.remove(passposition);
+                imageUrlLists.remove(passposition);
+                imageUrlPostLists.remove(passposition);
 
+                adapter.notifyDataSetChanged();
+            }
+            Intent intent = getIntent();
+            intent.putExtra("position",position);
+            intent.putExtra("passposition",passposition);
+            setResult(GlobalContanstant.CHECKROADPASS,intent);
+            finish();
+
+        } else if (resultCode == 201) {
+            int failposition = data.getIntExtra("failposition", -1);
+            if (list != null) {
+                list.remove(failposition);
+                audioUrls.remove(failposition);
+                imageUrlLists.remove(failposition);
+                imageUrlPostLists.remove(failposition);
+                adapter.notifyDataSetChanged();
+            }
+            Intent intent1 = getIntent();
+            intent1.putExtra("position",position);
+            intent1.putExtra("failposition",failposition);
+            setResult(GlobalContanstant.CHECKROADFAIL,intent1);
+            finish();
         }
-
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
+    private void initAcitionbar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setTitle(R.string.check);
+        }
+    }
+
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
+
 }

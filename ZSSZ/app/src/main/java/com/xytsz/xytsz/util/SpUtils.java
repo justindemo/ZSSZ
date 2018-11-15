@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * Created by admin on 2017/1/3.
+ *
  */
 public class SpUtils {
 
@@ -143,6 +144,7 @@ public class SpUtils {
         sp.clear();
         sp.commit();
     }
+
 
 
 }
